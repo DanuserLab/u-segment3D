@@ -280,7 +280,7 @@ def compute_metrics_cells(labels_true,
             plt.imshow(label_pred)
             plt.figure()
             plt.imshow(label_true)
-            plt.show()
+            plt.show(block=False)
             
         """
         Use a nearest neighbour type matching to expedite the instance matching. 

@@ -77,7 +77,7 @@ def _BackgroundRemoval(im):
     # visualize background. 
     # plt.figure()
     # plt.imshow( np.reshape(temp, im.shape), cmap='gray')
-    # plt.show()
+    # plt.show(block=False)
 
     if np.min(imgInit) == np.max(imgInit):
         imgInit = np.zeros(im.shape)
@@ -191,7 +191,7 @@ def _histeq_low_contrast(im, kernel_size=(256,256), clip_limit=0.01, fraction_th
 #             plt.imshow(flow[0][2][:1024,:1024])
 #             plt.subplot(313)
 #             plt.imshow(var_filter(flow[0][2], ksize=ksize)[:1024,:1024])
-#             plt.show()
+#             plt.show(block=False)
             
 #         diam_score = np.hstack(diam_score)
         
@@ -205,7 +205,7 @@ def _histeq_low_contrast(im, kernel_size=(256,256), clip_limit=0.01, fraction_th
         
 #         plt.figure()
 #         plt.plot(diam_range, diam_score, 'o-')
-#         plt.show()
+#         plt.show(block=False)
         
 #     print('auto determine cell diameter: ', best_diam)
 
@@ -394,7 +394,7 @@ def apply_cellpose_model_2D_prob_slice(im_slice,
             # plt.imshow(flow[0][2][:1024,:1024])
             # plt.subplot(313)
             # plt.imshow(var_filter(flow[0][2], ksize=ksize)[:1024,:1024])
-            # plt.show()
+            # plt.show(block=False)
 
         diam_score = np.hstack(diam_score)
 
@@ -408,7 +408,7 @@ def apply_cellpose_model_2D_prob_slice(im_slice,
 
         # plt.figure()
         # plt.plot(diam_range, diam_score, 'o-')
-        # plt.show()
+        # plt.show(block=False)
 
     else:
         diam_score = []
@@ -612,7 +612,7 @@ def apply_cellpose_model_2D_prob(im_stack, model,
                     if saveplotsfolder is not None:
                         plt.savefig(os.path.join(saveplotsfolder, 
                                                  'diameter_response_%.5f.svg' %(diam)), dpi=300, bbox_inches='tight')
-                    plt.show()
+                    plt.show(block=False)
                 
             diam_score = np.hstack(diam_score)
             
@@ -624,12 +624,13 @@ def apply_cellpose_model_2D_prob(im_stack, model,
             # =============================================================================
             best_diam = diam_range[np.argmax(diam_score)]
             
-            plt.figure(figsize=(10,10))
-            plt.plot(diam_range, diam_score, 'o-')
-            plt.vlines(best_diam, np.min(diam_score), np.max(diam_score), color='k', linestyles='dashed')
-            plt.xlabel('Cellpose Diameter [px]')
-            plt.ylabel('Contrast Score')
-            plt.show()
+            if debug_viz:
+                plt.figure(figsize=(10,10))
+                plt.plot(diam_range, diam_score, 'o-')
+                plt.vlines(best_diam, np.min(diam_score), np.max(diam_score), color='k', linestyles='dashed')
+                plt.xlabel('Cellpose Diameter [px]')
+                plt.ylabel('Contrast Score')
+                plt.show(block=False)
         
     else:
         diam_score = []
@@ -840,7 +841,7 @@ def apply_cellpose_model_2D_prob_multiscale(im_stack, model,
             if saveplotsfolder is not None:
                 plt.savefig(os.path.join(saveplotsfolder, 
                                          'diameter_response_%.5f.svg' %(diam)), dpi=300, bbox_inches='tight')
-            plt.show()
+            plt.show(block=False)
             
         diam_score = np.hstack(diam_score)
         
@@ -857,7 +858,7 @@ def apply_cellpose_model_2D_prob_multiscale(im_stack, model,
         
         plt.figure(figsize=(5,5))
         plt.plot(diam_score_)
-        plt.show()
+        plt.show(block=False)
         
         
         # pad eitheer side to handle boundary conditions.
@@ -902,7 +903,7 @@ def apply_cellpose_model_2D_prob_multiscale(im_stack, model,
 
         plt.figure()
         plt.plot(diam_range, diam_score, 'o-')
-        plt.show()
+        plt.show(block=False)
         
     else:
         diam_score = []

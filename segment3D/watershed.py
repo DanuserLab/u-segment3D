@@ -373,7 +373,7 @@ def gradient_watershed2D_binary(binary,
             plt.figure(figsize=(10,10))
             plt.imshow(binary)
             plt.plot(pt_ii_next[:,1], pt_ii_next[:,0], 'r.')
-            plt.show()
+            plt.show(block=False)
         
     tracks = np.array(tracks)
     
@@ -588,7 +588,7 @@ def gradient_watershed3D_binary(binary,
         # plt.imshow(binary.max(axis=0))
         # plt.plot(pt_ii_next[:,2], 
         #          pt_ii_next[:,1], 'r.')
-        # plt.show()
+        # plt.show(block=False)
         
         if debug_viz:
             
@@ -651,7 +651,7 @@ def gradient_watershed3D_binary(binary,
                 plt.savefig(os.path.join(saveplotsfolder, 
                                          'iter_'+str(ii).zfill(8)+'.png'), dpi=120, bbox_inches='tight')
                 
-            plt.show()
+            plt.show(block=False)
         
         
 # =============================================================================
@@ -896,7 +896,7 @@ def gradient_watershed3D_binary_dynamics(binary,
         # plt.imshow(binary.max(axis=0))
         # plt.plot(pt_ii_next[:,2], 
         #          pt_ii_next[:,1], 'r.')
-        # plt.show()
+        # plt.show(block=False)
         
         if debug_viz:
             sampling = 1000
@@ -927,7 +927,7 @@ def gradient_watershed3D_binary_dynamics(binary,
             # ax.set_ylim([0,binary.shape[1]])
             # ax.set_zlim([0,binary.shape[2]])
             set_axes_equal(ax)
-            plt.show()
+            plt.show(block=False)
             
     # print(ii)
     return np.concatenate([pts[None,...], pt_ii[None,...]], axis=0) # return the initial and final position!. 
@@ -1290,7 +1290,7 @@ def mp_gradient_watershed3D_binary(binary,
 #         # plt.imshow(binary.max(axis=0))
 #         # plt.plot(pt_ii_next[:,2], 
 #         #          pt_ii_next[:,1], 'r.')
-#         # plt.show()
+#         # plt.show(block=False)
         
 #         if debug_viz:
 #             sampling = 1000
@@ -1321,7 +1321,7 @@ def mp_gradient_watershed3D_binary(binary,
 #             # ax.set_ylim([0,binary.shape[1]])
 #             # ax.set_zlim([0,binary.shape[2]])
 #             set_axes_equal(ax)
-#             plt.show()
+#             plt.show(block=False)
         
         
 # # =============================================================================

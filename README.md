@@ -25,10 +25,11 @@ u-Segment3D has a number of dependencies detailed in the requirements.txt. GPU d
 
 
 ## Installation
-u-Segment3D can be installed by git cloning the repository and running pip in the cloned folder with python>=3.9. We have tested on Python==3.9 on Red Hat Enterprise Linux Server 7.9. We suggest first creating a new conda environment for install and use conda to install cudatoolkit and cudnn: 
+u-Segment3D can be installed by git cloning the repository and running pip in the cloned folder with python>=3.9. We have tested on Python==3.9 on Red Hat Enterprise Linux Server 7.9. We suggest first creating a new conda environment for install and use conda to install cudatoolkit and cudnn first: 
 
 ```
 conda create -n u_Segment3D_env python=3.9 cudatoolkit=11.8.* cudnn==8.* -c anaconda
+conda activate u_Segment3D_env
 pip install .
 ```
 Then, 
@@ -36,7 +37,7 @@ Then,
 ```
 pip install git+https://www.github.com/mouseland/cellpose.git
 ```
-to update to the latest version of Cellpose (If necessary). We find recent version of Cellpose doesn't need this.  
+to update to the latest version of Cellpose (If necessary). We find recent version of Cellpose doesn't need this last step.  
 
 The most difficult part of the install is the GPU dependencies, if using Cellpose. The 2D-to-3D segmentation of u-Segment3D itself can be run using only CPU. If there are any problems in installing, we provide an alternative install path which we have had success internally with colleagues, based on using the included u_Segment3D_env.yml environment file: 
 ```
@@ -54,8 +55,14 @@ If on a HPC cluster, you may need to module load the cuda, `module load cuda118/
 
 **Errors we have encountered:**
 
-Installing `pyicu` through pip may give an error when building. This is to do with the gcc version. You may need to use a later gcc compiler e.g. `module load gcc/8.3.0`.  
+1. Installing `pyicu` through pip may give an error when building. This is to do with the gcc version. You may need to use a later gcc compiler e.g. `module load gcc/8.3.0`. If this does not work, try removing the dependency from `requirements.txt` altogether and reinstall. 
 
+2. Installing `cucim-cu11` via pip seems to fail occasionally with the error it finds only a placeholder. This error can be fixed by directly downloading the wheel matching your Python and OS version from https://pypi.nvidia.com/cucim-cu11/, installing this first before running `pip install .` As example, using Python 3.9 and wget on Linux: 
+```
+wget https://pypi.nvidia.com/cucim-cu11/cucim_cu11-24.2.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+pip install cucim_cu11-24.2.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+pip install .
+```
 
 ## Getting Started
 The simplest way to get started is to check out the included notebook tutorials which aims to showcase various use cases of u-Segment3D for 3D segmentation and how parameters may be tuned and algorithms adapted. 

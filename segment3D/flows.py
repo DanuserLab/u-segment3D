@@ -937,11 +937,11 @@ def remove_bad_flow_masks_3D(mask,
     # import pylab as plt 
     # plt.figure()
     # plt.imshow(label_xy[100])
-    # plt.show()
+    # plt.show(block=False)
     
     # plt.figure()
     # plt.imshow(label_xz[label_xz.shape[0]//2])
-    # plt.show()
+    # plt.show(block=False)
 
     if dtform_method=='cellpose':
         print('ERROR: not yet implemented.')
