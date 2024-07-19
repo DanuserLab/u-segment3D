@@ -13,7 +13,7 @@ print(subpkgs)
 with open("requirements.txt", "r") as fp:
     install_requires = list(fp.read().splitlines())
 
-setup(name='u-Segment3D',
+setup(name='u_Segment3D',
 	  version='0.1.0',
 	  description='Generate consensus 3D segmentation from 2D segmented stacks',
 	  author='Felix Y. Zhou',
