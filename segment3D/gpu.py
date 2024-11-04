@@ -7,8 +7,52 @@ Created on Mon Feb 20 21:37:54 2023
 helper filters. 
 """
 
-import cupy 
 import numpy as np 
+
+def zoom_3d_pytorch(image_np, zoom_factors,output_size=None):
+    """Zooms a 3D image using PyTorch's interpolate function.
+
+    Parameters
+    ----------
+        image (torch.Tensor): The 3D image tensor (D, H, W).
+        zoom_factors (tuple): A tuple of 3 zoom factors (depth, height, width).
+
+    Returns:
+        torch.Tensor: The zoomed 3D image.
+    """
+    import torch
+    import torch.nn.functional as F
+    
+    image = torch.from_numpy(image_np[None,...].astype(np.float32))
+    # Make sure the image is in the correct format (C, D, H, W)
+    if image.dim() != 4:
+        raise ValueError("Input image must be 4-dimensional (C, D, H, W)")
+
+    # Convert zoom factors to a list if necessary
+    if isinstance(zoom_factors, (int, float)):
+        zoom_factors = [zoom_factors] * 3
+
+    if output_size is None:
+        # Use interpolate to perform the zoom
+        zoomed_image = F.interpolate(
+            image.unsqueeze(0),  # Add a batch dimension
+            scale_factor=zoom_factors,
+            mode='trilinear',  # Use trilinear interpolation for 3D images
+            align_corners=False  # For better accuracy (if you have the option)
+        ).squeeze(0)  # Remove the batch dimension
+    else:
+        # Use interpolate to perform the zoom
+        zoomed_image = F.interpolate(
+            image.unsqueeze(0),  # Add a batch dimension
+            size=tuple(output_size), # must be tuple
+            # scale_factor=zoom_factors,
+            mode='trilinear',  # Use trilinear interpolation for 3D images
+            align_corners=False  # For better accuracy (if you have the option)
+        ).squeeze(0)  # Remove the batch dimension
+
+    zoomed_image = zoomed_image.to('cpu').numpy()[0]
+    return zoomed_image
+
 
 def cuda_rescale(im, zoom, order=1, mode='reflect'):
     """
@@ -24,7 +68,7 @@ def cuda_rescale(im, zoom, order=1, mode='reflect'):
 
 
 def cuda_equalize_adapthist( im, kernel_size=None, clip_limit=0.05,nbins=256):
-    
+    import cupy 
     import cucim.skimage.exposure as cu_skexposure
     
     im_out = cu_skexposure.equalize_adapthist(cupy.array(im), 
@@ -43,7 +87,17 @@ def dask_cuda_rescale(img, zoom, order=1, mode='reflect', chunksize=(512,512,512
     result = g.compute()
     
     return result
+
+def dask_cpu_rescale(img, zoom, order=1, mode='reflect', chunksize=(512,512,512)):    
+    import dask.array as da
+    import scipy.ndimage as scipy_ndimage
+
+    im_chunk = da.from_array(img, chunks=chunksize) # make into chunk -> we can then map operation?  
+    g = im_chunk.map_blocks(scipy_ndimage.zoom, zoom=zoom, order=order, mode=mode)
+    result = g.compute()
     
+    return result
+
 
 def dask_cuda_bg(img, bg_ds=8, bg_sigma=5, chunksize=(512,512,512)):    
     """ Estimates and removes an estimated background based on filtering
@@ -83,20 +137,34 @@ def dask_cuda_bg(img, bg_ds=8, bg_sigma=5, chunksize=(512,512,512)):
     return result
 
 
+def torch_smooth_vol(im, ds=4, sigma=5):
+    
+    import scipy.ndimage as ndimage
+    out = zoom_3d_pytorch(im, zoom_factors=[1./ds,1./ds,1./ds])
+    out = ndimage.gaussian_filter(out, sigma=sigma)
+    out = zoom_3d_pytorch(out, zoom_factors=[1./ds,1./ds,1./ds], output_size=np.array(im.shape))
+    
+    return out
+
 def cuda_smooth_vol( im, ds=4, sigma=5):
     
     import cupyx.scipy.ndimage as ndimage
     import cucim.skimage.transform as cu_transform
     import numpy as np 
+    import cupy
     
-    out = cu_transform.resize(cupy.array(im), np.array(im.shape)//ds, preserve_range=True)
+    # out = cu_transform.resize(cupy.array(im), np.array(im.shape)//ds, preserve_range=True)
+    out = cuda_rescale(im, zoom=[1./ds,1./ds,1./ds], order=1, mode='reflect')
     out = ndimage.gaussian_filter(out, sigma=sigma)
-    out = cu_transform.resize(out, np.array(im.shape), preserve_range=True) 
+    # out = cu_transform.resize(out, np.array(im.shape), preserve_range=True) 
+    out = cuda_rescale(out, zoom=np.array(im.shape)/np.array(out.shape), order=1, mode='reflect')
     
     return cupy.asnumpy(out)
 
 
 def cuda_normalize(x, pmin=2, pmax=99.8, axis=None,  clip=False, eps=1e-20, cast_numpy=False):
+    
+    import cupy 
     
     mi, ma = cupy.percentile(cupy.array(x),[pmin,pmax],axis=axis,keepdims=True)
     out = (cupy.array(x) - mi) / ( ma - mi + eps )
@@ -173,6 +241,14 @@ def bg_normalize_cpu(im, bg_ds=4, bg_sigma=5):
     bg = _smooth_vol(im, ds=bg_ds, sigma=bg_sigma)
     
     # get the normalized. 
+    corrected = num_bg_correct(im, bg)
+    
+    return corrected.astype(np.float32) 
+
+def bg_normalize_torch(im, bg_ds=4, bg_sigma=5):
+    
+    bg = torch_smooth_vol(im, ds=bg_ds, sigma=bg_sigma)
+    
     corrected = num_bg_correct(im, bg)
     
     return corrected.astype(np.float32) 

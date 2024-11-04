@@ -630,6 +630,9 @@ def apply_cellpose_model_2D_prob(im_stack, model,
                 plt.vlines(best_diam, np.min(diam_score), np.max(diam_score), color='k', linestyles='dashed')
                 plt.xlabel('Cellpose Diameter [px]')
                 plt.ylabel('Contrast Score')
+                if saveplotsfolder is not None:
+                    plt.savefig(os.path.join(saveplotsfolder, 
+                                             'contrast-score_vs_diameter_plot.svg'), dpi=300, bbox_inches='tight')
                 plt.show(block=False)
         
     else:

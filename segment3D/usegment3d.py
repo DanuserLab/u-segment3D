@@ -50,9 +50,13 @@ def preprocess_imgs(img, params):
     try:
         imgs_out = np.array([usegment3D_gpu.dask_cuda_rescale(usegment3D_filters.fill_array(imgs_out[ch], method='median'), zoom, order=1, mode='reflect') for ch in np.arange(len(imgs_out))], dtype=np.float32)
     except:
-        print('no gpu. falling back to CPU for resizing')
-        imgs_out = np.array([ndimage.zoom(usegment3D_filters.fill_array(imgs_out[ch], method='median'), zoom, order=1, mode='reflect') for ch in np.arange(len(imgs_out))], dtype=np.float32)
-
+        try:
+            print('no CUDA. trying torch for resizing')
+            imgs_out = np.array([usegment3D_gpu.zoom_3d_pytorch(usegment3D_filters.fill_array(imgs_out[ch], method='median'), zoom) for ch in np.arange(len(imgs_out))], dtype=np.float32)
+        except:
+            print('no gpu. falling back to CPU for resizing')
+            # imgs_out = np.array([ndimage.zoom(usegment3D_filters.fill_array(imgs_out[ch], method='median'), zoom, order=1, mode='reflect') for ch in np.arange(len(imgs_out))], dtype=np.float32)
+            imgs_out = np.array([usegment3D_gpu.dask_cpu_rescale(usegment3D_filters.fill_array(imgs_out[ch], method='median'), zoom, order=1, mode='reflect') for ch in np.arange(len(imgs_out))], dtype=np.float32)
 
     # 2. background correct illumination 
     bg_ds = params['bg_ds']
@@ -69,8 +73,12 @@ def preprocess_imgs(img, params):
             #                                                                               bg_ds=bg_ds, 
             #                                                                               bg_sigma=bg_sigma), pmin=bg_normalize_min, pmax=bg_normalize_max, clip=True) for ch_im in imgs_out])
         except:
-            print('no gpu. falling back to CPU for normalizing')
-            imgs_out = np.array([usegment3D_gpu.num_normalize(usegment3D_gpu.bg_normalize_cpu(ch_im, bg_ds=bg_ds, bg_sigma=bg_sigma), pmin=bg_normalize_min, pmax=bg_normalize_max, clip=True) for ch_im in imgs_out])
+            try:
+                print('no CUDA. trying torch for normalizing') 
+                imgs_out = np.array([usegment3D_gpu.num_normalize(usegment3D_gpu.bg_normalize_torch(ch_im, bg_ds=bg_ds, bg_sigma=bg_sigma), pmin=bg_normalize_min, pmax=bg_normalize_max, clip=True) for ch_im in imgs_out])
+            except:
+                print('no gpu. falling back to CPU for normalizing')
+                imgs_out = np.array([usegment3D_gpu.num_normalize(usegment3D_gpu.bg_normalize_cpu(ch_im, bg_ds=bg_ds, bg_sigma=bg_sigma), pmin=bg_normalize_min, pmax=bg_normalize_max, clip=True) for ch_im in imgs_out])
     else:
         try:
             # gpu.bg_normalize uses cucim which somehow needs module load cuda. # so does cupy give this error hm... 

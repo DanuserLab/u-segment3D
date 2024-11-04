@@ -2,6 +2,7 @@ from setuptools import setup
 
 import os
 import re
+import platform
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -10,8 +11,15 @@ subpkgs = os.listdir(os.path.join(HERE,'segment3D'))
 subpkgs = [pkg for pkg in subpkgs if pkg not in exc_folders]
 print(subpkgs)
 
-with open("requirements.txt", "r") as fp:
-    install_requires = list(fp.read().splitlines())
+if platform.system()=='Linux':
+    with open("requirements.txt", "r") as fp:
+        install_requires = list(fp.read().splitlines())
+elif platform.system()=='Darwin':
+    with open("requirements_mac.txt", "r") as fp:
+        install_requires = list(fp.read().splitlines())
+elif platform.system()=='Windows':
+    with open("requirements_windows.txt", "r") as fp:
+        install_requires = list(fp.read().splitlines())
 
 setup(name='u_Segment3D',
 	  version='0.1.0',
