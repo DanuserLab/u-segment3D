@@ -149,7 +149,7 @@ def torch_smooth_vol(im, ds=4, sigma=5):
 def cuda_smooth_vol( im, ds=4, sigma=5):
     
     import cupyx.scipy.ndimage as ndimage
-    import cucim.skimage.transform as cu_transform
+    # import cucim.skimage.transform as cu_transform
     import numpy as np 
     import cupy
     

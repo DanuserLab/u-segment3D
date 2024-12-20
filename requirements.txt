@@ -3,14 +3,14 @@ cellpose
 #torch==2.0.1
 #torchvision==0.15.2
 cupy-cuda11x
-cucim-cu11
+#cucim-cu11
 dask[complete]
 scikit-image
 scikit-learn
 imagecodecs
 opencv-python-headless
 scipy
-numpy
+numpy<2.0
 matplotlib
 seaborn
 trimesh
@@ -20,5 +20,5 @@ connected-components-3d
 edt
 tqdm
 scikit-fmm
-pyicu
+#pyicu
 czifile

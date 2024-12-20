@@ -48,18 +48,8 @@ conda create -n u_Segment3D_env python=3.9 cudatoolkit=11.8.* cudnn==8.* -c anac
 conda activate u_Segment3D_env
 pip install .
 ```
-If on a HPC cluster, you may need to module load the cuda, `module load cuda118/toolkit/11.8.0` prior to activating the conda environment
+If on a HPC cluster, depending on the way it is setup, you may need to module load the cuda corresponding to the install, `module load cuda118/toolkit/11.8.0` prior to activating the conda environment
 
-**Errors we have encountered:**
-
-1. Installing `pyicu` through pip may give an error when building. This is to do with the gcc version. You may need to use a later gcc compiler e.g. `module load gcc/8.3.0`. If this does not work, try removing the dependency from `requirements.txt` altogether and reinstall. 
-
-2. Installing `cucim-cu11` via pip seems to fail occasionally with the error it finds only a placeholder. This error can be fixed by directly downloading the wheel matching your Python and OS version from https://pypi.nvidia.com/cucim-cu11/, installing this first before running `pip install .` As example, using Python 3.9 and wget on Linux: 
-```
-wget https://pypi.nvidia.com/cucim-cu11/cucim_cu11-24.2.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-pip install cucim_cu11-24.2.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-pip install .
-```
 
 ### Windows
 ```

@@ -6,7 +6,7 @@ scikit-learn
 imagecodecs
 opencv-python-headless
 scipy
-numpy
+numpy<2.0
 matplotlib
 seaborn
 trimesh
