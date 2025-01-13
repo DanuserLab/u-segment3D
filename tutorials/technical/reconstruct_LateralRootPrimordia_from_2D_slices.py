@@ -45,6 +45,12 @@ if __name__=="__main__":
     # load the labels 
     ref_objects = skio.imread(imgfile)
     
+
+    """
+    Setup a save folder
+    """
+    savefolder_seg = './reconstruct_LRP'
+    uSegment3D_fio.mkdir(savefolder_seg)
     
     """
     Check the background (assumed largest object) has a label = 0 
@@ -71,7 +77,10 @@ if __name__=="__main__":
     plt.imshow(ref_objects_color[:,ref_objects_color.shape[1]//2])
     plt.subplot(133)
     plt.imshow(ref_objects_color[:,:,ref_objects_color.shape[2]//2])
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'input_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    
     
    
     
@@ -139,9 +148,6 @@ if __name__=="__main__":
                                                                                                                 savefolder=None,
                                                                                                                 basename=None)
     
-    savefolder_seg = './reconstruct_LRP'
-    uSegment3D_fio.mkdir(savefolder_seg)
-    
     uSegment3D_fio.save_segmentation(os.path.join(savefolder_seg,
                                                   'uSegment3D_reconstuct_LRP_initial_labels.tif'), segmentation3D)
     
@@ -207,7 +213,10 @@ if __name__=="__main__":
     plt.yticks(fontsize=18)
     plt.ylabel('Average Precision', fontsize=20)
     plt.xlabel('IoU', fontsize=20)
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'ap_curve_final_segmentation_3D-reconstruction.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    plt.close('all')
 
      
     

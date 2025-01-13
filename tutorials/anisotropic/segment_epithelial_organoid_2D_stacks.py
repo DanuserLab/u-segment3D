@@ -27,6 +27,7 @@ if __name__=="__main__":
     import skimage.segmentation as sksegmentation 
     import skimage.filters as skfilters
     import os 
+    import scipy.io as spio
     
     import segment3D.parameters as uSegment3D_params # this is useful to call default parameters, and keep track of parameter changes and for saving parameters.  
     import segment3D.segmentation as uSegment3D_segment
@@ -43,6 +44,11 @@ if __name__=="__main__":
     # here since this is not tif, we have to read .czi
     img = uSegment3D_fio.read_czifile(imgfile)
     
+
+    # create a savefolder:
+    savefolder_seg = os.path.join('.', 
+                                  'epidermal_segment')
+    uSegment3D_fio.mkdir(savefolder_seg)
     
     """
     Visualize the image in max projection, as you can see the cells are very thin and span only a few cells. 
@@ -57,9 +63,11 @@ if __name__=="__main__":
     plt.imshow(img.max(axis=1), cmap='gray')
     plt.subplot(133)
     plt.imshow(img.max(axis=2), cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'input_image_max-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
     
-    
+
     
     # =============================================================================
     #     1. Preprocess the image. 
@@ -83,7 +91,10 @@ if __name__=="__main__":
     plt.imshow(img_preprocess.max(axis=1), cmap='gray')
     plt.subplot(133)
     plt.imshow(img_preprocess.max(axis=2), cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'resize_image_max-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    
     
 
     plt.figure(figsize=(10,10))
@@ -94,8 +105,10 @@ if __name__=="__main__":
     plt.imshow(img_preprocess[:,img_preprocess.shape[1]//2], cmap='gray')
     plt.subplot(133)
     plt.imshow(img_preprocess[:,:,img_preprocess.shape[2]//2], cmap='gray')
-    plt.show()
-    
+    plt.savefig(os.path.join(savefolder_seg,
+                             'resize_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+
     
     """
     Do uneven background illumination correction, since there is a clear gradient across the same slice. 
@@ -113,11 +126,20 @@ if __name__=="__main__":
     plt.imshow(img_preprocess_bg_remove[:,img_preprocess.shape[1]//2], cmap='gray')
     plt.subplot(133)
     plt.imshow(img_preprocess_bg_remove[:,:,img_preprocess.shape[2]//2], cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'preprocessed_image_midslice-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
     
+    plt.close('all')
     
     # use now the background corrected 
     img_preprocess = img_preprocess_bg_remove.copy()
+
+
+    # save the preprocessed image. 
+    skio.imsave(os.path.join(savefolder_seg, 
+                             'preprocessed_image_input.tif'), 
+                np.uint8(255.*img_preprocess))
     
     # =============================================================================
     # =============================================================================
@@ -196,6 +218,11 @@ if __name__=="__main__":
     psf = ndimage.gaussian_filter(psf, sigma=1)**2.
     psf = psf/float(np.sum(psf))
     
+
+    save_2D_segmentation_plotsfolder = os.path.join(savefolder_seg, 
+                                                    '2D_cell_segment')
+    uSegment3D_fio.mkdir(save_2D_segmentation_plotsfolder)
+
     
     # iterate over the stack
     for dd in np.arange(len(img_preprocess))[:]:
@@ -223,11 +250,7 @@ if __name__=="__main__":
         all_params_diams_score.append(params[1])
         all_params_diams.append(params[2])
         
-        ##### the main 
-        all_probs = all_probs[0]
-        all_flows = all_flows[:,0]
-        all_styles = all_styles
-            
+        ##### the main             
         all_probs = np.clip(all_probs, -88.72, 88.72)
         all_probs = (1./(1.+np.exp(-all_probs))) # normalize. 
         
@@ -269,10 +292,12 @@ if __name__=="__main__":
         """
         marked = sksegmentation.mark_boundaries(np.dstack([im_slice, im_slice, im_slice]), 
                                                 cell_seg_connected_original, mode='thick')
-        plt.figure()
+        plt.figure(figsize=(10,10))
         plt.imshow(marked)                                         
-        plt.show()
-        
+        plt.savefig(os.path.join(save_2D_segmentation_plotsfolder,
+                                 'xy_slice_z-'+str(dd).zfill(3)+'.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+        plt.close('all')
         
         all_probs_stack.append(all_probs)
         all_flows_stack.append(all_flows)
@@ -291,18 +316,10 @@ if __name__=="__main__":
     all_params_diams = np.array(all_params_diams)
     
         
-        
-    
+
     # """
     # Save out all the intermediates  (check out zarr for lazy loading these as metadata in one file. )
     # """
-    
-    import scipy.io as spio
-    
-    # create a savefolder:
-    savefolder_seg = os.path.join('.', 
-                                  'epidermal_segment')
-    uSegment3D_fio.mkdir(savefolder_seg)
     
     view = 'xy'
     basename = os.path.split(imgfile)[-1].split('.tif')[0]
@@ -454,7 +471,10 @@ if __name__=="__main__":
                                                           img_preprocess[:,:,img_preprocess.shape[2]//2]]),
                                               segmentation3D_filt[:,:,img_preprocess.shape[2]//2], 
                                               color=(0,1,0), mode='thick'))
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'segmentation_filt_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    plt.close('all')
     
     
     # save the segmentation 

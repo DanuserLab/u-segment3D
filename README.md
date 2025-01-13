@@ -48,8 +48,19 @@ conda create -n u_Segment3D_env python=3.9 cudatoolkit=11.8.* cudnn==8.* -c anac
 conda activate u_Segment3D_env
 pip install .
 ```
-If on a HPC cluster, depending on the way it is setup, you may need to module load the cuda corresponding to the install, `module load cuda118/toolkit/11.8.0` prior to activating the conda environment
+If on a HPC cluster, depending on the way it is setup, you may need to module load the cuda corresponding to the install, `module load cuda118/toolkit/11.8.0` prior to activating the conda environment to use the installed `cupy` library functions for image resizing. Otherwise, u-Segment3D will fall back to a `pytorch` version of image resizing. Don't worry, this still uses gpu, but is slower than using cupy.
 
+**Errors we have encountered:**
+
+1. When running, we get an `icu` error, `AttributeError: module 'icu' has no attribute 'Locale'`. Fix this by installing `pyicu`. This can be done using pip (requires gcc compiler, gcc>=6.3.0) or alternatively installation of a precompiled version with conda from the conda-forge channel
+```
+pip install pyicu # Requires compilation, check that gcc>=6.3.0 to be available on your linux distribution
+conda install -n u_Segment3D_env pyicu -c conda-forge # tries to install a precompiled version. 
+```
+
+2. pytorch does not have gpu available. Try installing a previous version for the respective cudatoolkit version. Alternatively, try installing a precompiled version using anaconda from the conda-forge channel. Refer to instructions for Windows below.  
+
+3. You see a print out along the lines of 'cuda not available. Falling back to pytorch'. This doesn't mean you don't have cuda. It means cuda drivers is likely installed in non-standard location or not installed properly so that not all cupy function is not available. Consequently u-Segment3D is using CUDA (if available) via pytorch. 
 
 ### Windows
 ```
@@ -68,6 +79,11 @@ pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cu118
 ```
 See https://pytorch.org/get-started/previous-versions/ to check out other pytorch versions.
 
+Alternatively, you may try to install pytorch through anaconda from the conda-forge channel:
+```
+conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+```
+
 **Errors we have encountered:**
 
 1. Installing `scikit-fmm` fails, because it cannot be compiled. To resolve, install precompiled binary version through `conda-forge` before running `pip install .`
@@ -85,6 +101,25 @@ pip install .
 
 ## Getting Started
 The simplest way to get started is to check out the included notebook tutorials which aims to showcase various use cases of u-Segment3D for 3D segmentation and how parameters may be tuned and algorithms adapted. 
+
+The easiest way to use u-Segment3D is the indirect method. If you have 2D slice-by-slice instance segmentation masks of cells in xy, xz, and yz views, then you can translate these into one 3D instance segmentation mask with a few lines of code:
+```
+import segment3D.parameters as uSegment3D_params
+import segment3D.usegment3d as uSegment3D
+
+# instantiate default parameters
+indirect_aggregation_params = uSegment3D_params.get_2D_to_3D_aggregation_params()
+
+# integrate labels_xy, labels_xz, labels_yz into one single 3D segmentation. Give a single-channel volume image, img we define its xy view as img, its xz view as img.transpose(1,2,0) and its yz view as img.transpose(2,0,1)
+segmentation3D, (probability3D, gradients3D) = uSegment3D.aggregate_2D_to_3D_segmentation_indirect_method(segmentations=[labels_xy,
+                                                                                                                        labels_xz,
+                                                                                                                        labels_yz], 
+                                                                                                                  img_xy_shape = labels_xy.shape, 
+                                                                                                                precomputed_binary=None, 
+                                                                                                                params=indirect_aggregation_params,
+                                                                                                                savefolder=None,
+                                                                                                                basename=None)
+``` 
 
 ### Example Data
 Please download the zipped folder containing example data from the [link](https://www.dropbox.com/scl/fo/le8rjbrohg9p29kebq25f/ANp7T7Z7bh4GsaphRmp7Qc0?rlkey=prgj9mxlluy8cl7x68ygtrigz&st=x89yerip&dl=0). The following examples assume you have unzipped the data to the `example_data/` directory of this repository, and is running the examples after installation from their current location in the repository. Please adjust filepaths accordingly, if otherwise. 

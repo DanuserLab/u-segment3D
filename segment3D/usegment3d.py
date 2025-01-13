@@ -765,10 +765,28 @@ def postprocess_3D_cell_segmentation(segmentation,
     """
     params = postprocess_params.copy()
     
+    # minimum size filter. 
     if params['size_filters']['min_size']>0:
         # remove small regions and keep one label? 
         segmentation_filt = fill_holes_and_remove_small_masks(segmentation, 
                                                               min_size=params['size_filters']['min_size']) ### this should be implemented to not depend on cellpose!. 
+    # maximum size filter. 
+    if params['size_filters']['max_size'] is not None:
+
+        uniq_labels = np.setdiff1d(np.unique(segmentation_filt), 0) 
+        regions = skmeasure.regionprops(segmentation_filt)
+        
+        areas = np.hstack([re.area for re in regions])
+        area_thresh = params['size_filters']['max_size']
+        
+        if np.sum(areas>area_thresh): # there are regions greater than this threshold 
+            remove_labels_indices = np.arange(len(uniq_labels))[areas>area_thresh]
+            # remove_labels = uniq_labels[remove_labels_indices]
+            
+            for rr in remove_labels_indices:
+                coords = regions[rr].coords
+                segmentation_filt[coords[:,0], coords[:,1], coords[:,2]] = 0 
+                
     
     segmentation_filt = usegment3D_filters.largest_component_vol_labels_fast(segmentation_filt, connectivity=1)
     

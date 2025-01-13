@@ -358,6 +358,7 @@ def apply_cellpose_model_2D_prob_slice(im_slice,
                                         batch_size=32,
                                         do_3D=False,
                                         flow_threshold=0.6,
+                                        cellprob_threshold=-np.inf,
                                         diameter=diam, # this is ok
                                         invert=model_invert) # try inverting?
 
@@ -365,6 +366,7 @@ def apply_cellpose_model_2D_prob_slice(im_slice,
             # prob_score = np.nanmean(var_filter(flow[0][1][0], ksize=ksize)+var_filter(flow[0][1][1], ksize=ksize))
             prob = flow[0][2]
             prob = 1./(1+np.exp(-prob))
+                        
             # prob_score = np.nanmean(1./(var_filter(prob, ksize=ksize) + 0.1)*prob)
             # prob_score = np.nanmean(var_filter(prob, ksize=ksize))
             # prob_score = np.median(prob) / np.std(prob)
@@ -613,6 +615,7 @@ def apply_cellpose_model_2D_prob(im_stack, model,
                         plt.savefig(os.path.join(saveplotsfolder, 
                                                  'diameter_response_%.5f.svg' %(diam)), dpi=300, bbox_inches='tight')
                     plt.show(block=False)
+                    plt.close('all') # too many figures is generated therefore force close. 
                 
             diam_score = np.hstack(diam_score)
             
@@ -634,6 +637,7 @@ def apply_cellpose_model_2D_prob(im_stack, model,
                     plt.savefig(os.path.join(saveplotsfolder, 
                                              'contrast-score_vs_diameter_plot.svg'), dpi=300, bbox_inches='tight')
                 plt.show(block=False)
+                plt.close('all') # also close. 
         
     else:
         diam_score = []
@@ -845,6 +849,7 @@ def apply_cellpose_model_2D_prob_multiscale(im_stack, model,
                 plt.savefig(os.path.join(saveplotsfolder, 
                                          'diameter_response_%.5f.svg' %(diam)), dpi=300, bbox_inches='tight')
             plt.show(block=False)
+            plt.close('all')
             
         diam_score = np.hstack(diam_score)
         
@@ -907,6 +912,7 @@ def apply_cellpose_model_2D_prob_multiscale(im_stack, model,
         plt.figure()
         plt.plot(diam_range, diam_score, 'o-')
         plt.show(block=False)
+        plt.close('all')
         
     else:
         diam_score = []

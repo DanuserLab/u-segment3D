@@ -41,6 +41,13 @@ if __name__=="__main__":
     img = skio.imread(imgfile)
     
     
+    # we can save the segmentation with its colors using provided file I/O functions in u-Segment3D. If the savefolder exists and provided with basename in the function above, these would be saved automatically. 
+    # 1. create a save folder 
+    savecellfolder = os.path.join('.', 
+                                  'Tcells_segment');
+    uSegment3D_fio.mkdir(savecellfolder)
+    
+
     """
     Visualize the image in max projection and mid-slice to get an idea of how it looks
     """
@@ -52,9 +59,11 @@ if __name__=="__main__":
     plt.imshow(img.max(axis=1), cmap='gray')
     plt.subplot(133)
     plt.imshow(img.max(axis=2), cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savecellfolder,
+                             'input_image_max-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
     
-    
+
     plt.figure(figsize=(10,10))
     plt.subplot(131)
     plt.title('Mid Slices')
@@ -63,7 +72,9 @@ if __name__=="__main__":
     plt.imshow(img[:,img.shape[1]//2], cmap='gray')
     plt.subplot(133)
     plt.imshow(img[:,:,img.shape[2]//2], cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savecellfolder,
+                             'input_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
     
     # =============================================================================
     #     1. Preprocess the image, so that it is isotropic
@@ -117,7 +128,9 @@ if __name__=="__main__":
     plt.imshow(img_preprocess.max(axis=1), cmap='gray')
     plt.subplot(133)
     plt.imshow(img_preprocess.max(axis=2), cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savecellfolder,
+                             'preprocessed_image_max-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
     
     
     plt.figure(figsize=(10,10))
@@ -128,9 +141,16 @@ if __name__=="__main__":
     plt.imshow(img_preprocess[:,img_preprocess.shape[1]//2], cmap='gray')
     plt.subplot(133)
     plt.imshow(img_preprocess[:,:,img_preprocess.shape[2]//2], cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savecellfolder,
+                             'preprocessed_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
     
-    
+    plt.close('all')
+
+    # save the preprocessed image. 
+    skio.imsave(os.path.join(savecellfolder, 
+                             'preprocessed_image_input.tif'), 
+                np.uint8(255.*img_preprocess))
     # =============================================================================
     #     2. Run Cellpose 2D in xy, xz, yz with auto-tuning diameter to get cell probability and gradients, in all 3 views. 
     # =============================================================================
@@ -148,15 +168,15 @@ if __name__=="__main__":
     Note: the default Cellpose model is set to \'cyto\' which is Cellpose 1., you can change this to any other available Cellpose model e.g. cyto2 is pretty good for single cells.
     """
     
-    # cellpose_segment_params['cellpose_modelname'] = 'cyto' # try different models like 'cyto', 'cyto3' for cells, and additionally 'nuclei' for nuclei
+    cellpose_segment_params['cellpose_modelname'] = 'cyto' # try different models like 'cyto', 'cyto3' for cells, and additionally 'nuclei' for nuclei
     # cellpose_segment_params['cellpose_modelname'] = 'cyto2' # try different models like 'cyto', 'cyto3' for cells, and additionally 'nuclei' for nuclei
-    cellpose_segment_params['cellpose_modelname'] = 'cyto3' # seems to break more fragments. 
+    # cellpose_segment_params['cellpose_modelname'] = 'cyto3' # seems to break more fragments. 
     
     
     """
-    Since the inside is hollow, invert the model
+    Since the inside is hollow, invert the model (as of Cellpose3, this seems not needed, and makes segmentation worse...)
     """
-    cellpose_segment_params['model_invert'] = True
+    cellpose_segment_params['model_invert'] = False
     
     
     """
@@ -173,21 +193,28 @@ if __name__=="__main__":
     
     
     # this expects a multichannel input image and in the format (M,N,L,channels) i.e. channels last.
-    img_preprocess = img_preprocess[...,None] # we generate an artificial channel
+    if len(img_preprocess.shape) ==3: # 3D volume 
+        img_preprocess = img_preprocess[...,None] # we generate an artificial channel
+
     
-    
+    savefolderplots_xy = os.path.join(savecellfolder, 'cellpose_xy'); uSegment3D_fio.mkdir(savefolderplots_xy)
+    cellpose_segment_params['saveplotsfolder'] = savefolderplots_xy
     #### 1. running for xy orientation. If the savefolder and basename are specified, the output will be saved as .pkl and .mat files 
     img_segment_2D_xy_diams, img_segment_3D_xy_probs, img_segment_2D_xy_flows, img_segment_2D_xy_styles = uSegment3D.Cellpose2D_model_auto(img_preprocess, 
                                                                                                                                            view='xy', 
                                                                                                                                            params=cellpose_segment_params, 
                                                                                                                                            basename=None, savefolder=None)
 
+    savefolderplots_xz = os.path.join(savecellfolder, 'cellpose_xz'); uSegment3D_fio.mkdir(savefolderplots_xz)
+    cellpose_segment_params['saveplotsfolder'] = savefolderplots_xz
     #### 2. running for xz orientation 
     img_segment_2D_xz_diams, img_segment_3D_xz_probs, img_segment_2D_xz_flows, img_segment_2D_xz_styles = uSegment3D.Cellpose2D_model_auto(img_preprocess, 
                                                                                                                                            view='xz', 
                                                                                                                                            params=cellpose_segment_params, 
                                                                                                                                            basename=None, savefolder=None)
 
+    savefolderplots_yz = os.path.join(savecellfolder, 'cellpose_yz'); uSegment3D_fio.mkdir(savefolderplots_yz)
+    cellpose_segment_params['saveplotsfolder'] = savefolderplots_yz
     #### 3. running for yz orientation 
     img_segment_2D_yz_diams, img_segment_3D_yz_probs, img_segment_2D_yz_flows, img_segment_2D_yz_styles = uSegment3D.Cellpose2D_model_auto(img_preprocess, 
                                                                                                                                            view='yz', 
@@ -226,11 +253,6 @@ if __name__=="__main__":
                                                                                                             savefolder=None,
                                                                                                             basename=None)
     
-    # we can save the segmentation with its colors using provided file I/O functions in u-Segment3D. If the savefolder exists and provided with basename in the function above, these would be saved automatically. 
-    # 1. create a save folder 
-    savecellfolder = os.path.join('.', 
-                                  'Tcells_segment');
-    uSegment3D_fio.mkdir(savecellfolder)
     
     # 2. joint the save folder with the filename we wish to use. 2 files will be saved, 1=segmentation as labels and 2nd = 16color RGB colored segmentation for visualization
     uSegment3D_fio.save_segmentation(os.path.join(savecellfolder,
@@ -285,7 +307,10 @@ if __name__=="__main__":
                                                          img_preprocess[:,:,img_preprocess.shape[2]//2]]),
                                               segmentation3D_filt[:,:,img_preprocess.shape[2]//2], 
                                               color=(0,1,0), mode='thick'))
-    plt.show()
+    plt.savefig(os.path.join(savecellfolder,
+                             'segmentation_filt_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    plt.close('all')
     
     
     """
@@ -359,7 +384,10 @@ if __name__=="__main__":
                                                           img_preprocess[:,:,img_preprocess.shape[2]//2]]),
                                               segmentation3D_filt_diffuse[:,:,img_preprocess.shape[2]//2], 
                                               color=(0,1,0), mode='thick'))
-    plt.show()
+    plt.savefig(os.path.join(savecellfolder,
+                             'segmentation_label-diffuse_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    plt.close('all')
     
     
     # save this segmentation
@@ -430,7 +458,10 @@ if __name__=="__main__":
                                                           guide_image[:,:,guide_image.shape[2]//2]]),
                                               segmentation3D_filt_guide[:,:,guide_image.shape[2]//2], 
                                               color=(0,1,0), mode='thick'))
-    plt.show()
+    plt.savefig(os.path.join(savecellfolder,
+                             'segmentation_guide-filter_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    plt.close('all')
     
     
     # save this final segmentation

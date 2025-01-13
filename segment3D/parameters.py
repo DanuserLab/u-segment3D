@@ -111,6 +111,7 @@ def get_2D_to_3D_aggregation_params():
 def get_postprocess_segmentation_params():
     
     params = {'size_filters': {'min_size': 200, # int >0, name: The Smallest Allowable Cell Size [voxels] 
+                               'max_size': None, # int >0, name: The Largest Allowable Cell Size [voxels]
                                'max_size_factor': 10, # float >0, name: Multiplier for Setting Maximum Cell Size (= mean + max_size_factor * std) 
                                'do_stats_filter' : True}, # Name: Perform Maximum Size Filtering # bool, if set, implements the above, max_size_factor filtering for maximum object size. 
               'flow_consistency' : {'flow_threshold': 0.85, # float >0, # name: Maximum Mean Squared Error Between Reconstructed 3D Gradients and Combined 2D-to-3D Gradients.

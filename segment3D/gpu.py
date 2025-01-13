@@ -9,7 +9,7 @@ helper filters.
 
 import numpy as np 
 
-def zoom_3d_pytorch(image_np, zoom_factors,output_size=None):
+def zoom_3d_pytorch(image_np, zoom_factors,interp_mode='trilinear', output_size=None):
     """Zooms a 3D image using PyTorch's interpolate function.
 
     Parameters
@@ -33,22 +33,39 @@ def zoom_3d_pytorch(image_np, zoom_factors,output_size=None):
         zoom_factors = [zoom_factors] * 3
 
     if output_size is None:
-        # Use interpolate to perform the zoom
-        zoomed_image = F.interpolate(
-            image.unsqueeze(0),  # Add a batch dimension
-            scale_factor=zoom_factors,
-            mode='trilinear',  # Use trilinear interpolation for 3D images
-            align_corners=False  # For better accuracy (if you have the option)
-        ).squeeze(0)  # Remove the batch dimension
+        if interp_mode in ['linear', 'bilinear', 'bicubic', 'trilinear']:
+            # Use interpolate to perform the zoom
+            zoomed_image = F.interpolate(
+                image.unsqueeze(0),  # Add a batch dimension
+                scale_factor=zoom_factors,
+                mode=interp_mode,  # Use trilinear interpolation for 3D images
+                align_corners=False  # For better accuracy (if you have the option)
+            ).squeeze(0)  # Remove the batch dimension
+        else:
+            # Use interpolate to perform the zoom
+            zoomed_image = F.interpolate(
+                image.unsqueeze(0),  # Add a batch dimension
+                scale_factor=zoom_factors,
+                mode=interp_mode,  # Use trilinear interpolation for 3D images
+            ).squeeze(0)  # Remove the batch dimension
     else:
-        # Use interpolate to perform the zoom
-        zoomed_image = F.interpolate(
-            image.unsqueeze(0),  # Add a batch dimension
-            size=tuple(output_size), # must be tuple
-            # scale_factor=zoom_factors,
-            mode='trilinear',  # Use trilinear interpolation for 3D images
-            align_corners=False  # For better accuracy (if you have the option)
-        ).squeeze(0)  # Remove the batch dimension
+        if interp_mode in ['linear', 'bilinear', 'bicubic', 'trilinear']:
+            # Use interpolate to perform the zoom
+            zoomed_image = F.interpolate(
+                image.unsqueeze(0),  # Add a batch dimension
+                size=tuple(output_size), # must be tuple
+                # scale_factor=zoom_factors,
+                mode=interp_mode,  # Use trilinear interpolation for 3D images
+                align_corners=False  # For better accuracy (if you have the option)
+            ).squeeze(0)  # Remove the batch dimension
+        else:
+            # Use interpolate to perform the zoom
+            zoomed_image = F.interpolate(
+                image.unsqueeze(0),  # Add a batch dimension
+                size=tuple(output_size), # must be tuple
+                # scale_factor=zoom_factors,
+                mode=interp_mode,  # Use trilinear interpolation for 3D images
+            ).squeeze(0)  # Remove the batch dimension
 
     zoomed_image = zoomed_image.to('cpu').numpy()[0]
     return zoomed_image
@@ -81,9 +98,10 @@ def cuda_equalize_adapthist( im, kernel_size=None, clip_limit=0.05,nbins=256):
 # this also seems good. 
 def dask_cuda_rescale(img, zoom, order=1, mode='reflect', chunksize=(512,512,512)):    
     import dask.array as da
+    import numpy as np 
 
     im_chunk = da.from_array(img, chunks=chunksize) # make into chunk -> we can then map operation?  
-    g = im_chunk.map_blocks(cuda_rescale, zoom=zoom, order=order, mode=mode)
+    g = im_chunk.map_blocks(cuda_rescale, zoom=zoom, order=order, mode=mode, dtype=np.float32)
     result = g.compute()
     
     return result
@@ -91,9 +109,10 @@ def dask_cuda_rescale(img, zoom, order=1, mode='reflect', chunksize=(512,512,512
 def dask_cpu_rescale(img, zoom, order=1, mode='reflect', chunksize=(512,512,512)):    
     import dask.array as da
     import scipy.ndimage as scipy_ndimage
+    import numpy as np 
 
     im_chunk = da.from_array(img, chunks=chunksize) # make into chunk -> we can then map operation?  
-    g = im_chunk.map_blocks(scipy_ndimage.zoom, zoom=zoom, order=order, mode=mode)
+    g = im_chunk.map_blocks(scipy_ndimage.zoom, zoom=zoom, order=order, mode=mode, dtype=np.float32)
     result = g.compute()
     
     return result

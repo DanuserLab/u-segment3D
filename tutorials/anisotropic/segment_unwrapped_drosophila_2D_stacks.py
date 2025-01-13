@@ -50,6 +50,13 @@ if __name__=="__main__":
     
     surface_slice_no = 110
     
+
+    # 1. create a save folder to save everything
+    savefolder_seg = os.path.join('.', 
+                                  'unwrapped_drosophila_segment');
+    uSegment3D_fio.mkdir(savefolder_seg)
+    
+
     """
     Visualize the image in max projection, as you can see the cells are very thin and span only a few cells. 
     
@@ -63,7 +70,9 @@ if __name__=="__main__":
     plt.imshow(img[:,img.shape[1]//2], cmap='gray')
     plt.subplot(133)
     plt.imshow(img[:,:,img.shape[2]//2], cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'input_image_midslice-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
     
     print(img.shape)
     
@@ -94,8 +103,14 @@ if __name__=="__main__":
     plt.imshow(img_preprocess[:,img_preprocess.shape[1]//2], cmap='gray')
     plt.subplot(133)
     plt.imshow(img_preprocess[:,:,img_preprocess.shape[2]//2], cmap='gray')
-    plt.show()
-    
+    plt.savefig(os.path.join(savefolder_seg,
+                             'input_image_midslice-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+
+    plt.close('all')
+
+    skio.imsave(os.path.join(savefolder_seg, 'preprocessed_input_image.tif'),
+                            np.uint8(255.*img_preprocess))
     # =============================================================================
     # =============================================================================
     # #     2. Run Cellpose using u-Segment3D tuning method with cellpose but only with xy slices
@@ -123,7 +138,8 @@ if __name__=="__main__":
     
     
     # this expects a multichannel input image and in the format (M,N,L,channels) i.e. channels last.
-    img_preprocess = img_preprocess[...,None] # we generate an artificial channel
+    if len(img_preprocess.shape) == 3:
+        img_preprocess = img_preprocess[...,None] # we generate an artificial channel
     
     
     #### 1. running for xy orientation. If the savefolder and basename are specified, the output will be saved as .pkl and .mat files 
@@ -189,19 +205,13 @@ if __name__=="__main__":
     
     
     
-    # we can save the segmentation with its colors using provided file I/O functions in u-Segment3D. If the savefolder exists and provided with basename in the function above, these would be saved automatically. 
-    # 1. create a save folder 
-    savecellfolder = os.path.join('.', 
-                                  'unwrapped_drosophila_segment');
-    uSegment3D_fio.mkdir(savecellfolder)
-    
     # 2. joint the save folder with the filename we wish to use. 2 files will be saved, 1=segmentation as labels and 2nd = 16color RGB colored segmentation for visualization
-    uSegment3D_fio.save_segmentation(os.path.join(savecellfolder,
+    uSegment3D_fio.save_segmentation(os.path.join(savefolder_seg,
                                                   'uSegment3D_unwrapped_drosophila_labels.tif'), segmentation3D)
     
     
     # 3. if you want to save the intermediate combined probability and gradients, we recommend using pickle 
-    uSegment3D_fio.write_pickle(os.path.join(savecellfolder,
+    uSegment3D_fio.write_pickle(os.path.join(savefolder_seg,
                                                   'uSegment3D_unwrapped_drosophila_3Dcombined_probs_and_gradients'), 
                                 savedict={'probs': probability3D.astype(np.float32),
                                           'gradients': gradients3D.astype(np.float32)})
@@ -250,11 +260,14 @@ if __name__=="__main__":
                                                           img_preprocess[:,:,img_preprocess.shape[2]//2]]),
                                               segmentation3D_filt[:,:,img_preprocess.shape[2]//2], 
                                               color=(0,1,0), mode='thick'))
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'segmentation_filt_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    plt.close('all')
     
     
     # save this out 
-    uSegment3D_fio.save_segmentation(os.path.join(savecellfolder,
+    uSegment3D_fio.save_segmentation(os.path.join(savefolder_seg,
                                                   'uSegment3D_unwrap_drosophila_labels_postprocess.tif'), segmentation3D_filt)
 
                                    

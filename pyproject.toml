@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+ 
+ 
+[tool.setuptools]
+packages = ["segment3D"]
+ 
+ 
+#[tool.setuptools.packages.find]
+#where = ["."]  # list of folders that contain the packages (["."] by default)
+#include = ["segment3D"]  # package names should match these glob patterns (["*"] by default)
+#exclude = ['__pycache__', '__init__.py']  # exclude packages matching these glob patterns (empty by default)
+#namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
+ 
+ 
+[project]
+name="u-Segment3D"
+description="Generate consensus 3D segmentation from 2D segmented stacks"
+authors = [{name='Felix Y. Zhou', email='felixzhou1@gmail.com'}]
+readme = "README.md"
+license={file = "LICENSE"}
+version = "0.1.1"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3.9",
+]
+
+
+requires-python = ">=3.9"
+dependencies = [
+    'cellpose',
+    'cupy-cuda11x; sys_platform!="darwin"',
+    'dask[complete]',
+    'scikit-image',
+    'scikit-learn',
+    'imagecodecs',
+    'opencv-python-headless',
+    'scipy',
+    'numpy<2.0',
+    'matplotlib',
+    'seaborn',
+    'trimesh',
+    'multiprocess',
+    'tiler',
+    'connected-components-3d',
+    'edt',
+    'tqdm',
+    'scikit-fmm',
+    'czifile'
+    ]
+
+[project.urls]
+Homepage = "https://github.com/DanuserLab/u-segment3D"
+Issues = "https://github.com/DanuserLab/u-segment3D/issues"
+

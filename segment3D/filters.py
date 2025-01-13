@@ -210,7 +210,7 @@ def meijering_ridge_filter_2D_multiprocess(stack, sigmas, low_contrast_percentil
     def _run_filter(slice_id):
         
         im_slice = stack_in[slice_id]
-        if skexposure.is_low_contrast(im_slice, lower_percentile=low_contrast_percentile):
+        if skexposure.is_low_contrast(im_slice, fraction_threshold=low_contrast_percentile):
             im_slice = np.zeros_like(im_slice)
         else:
             im_slice = skfilters.meijering(im_slice, 

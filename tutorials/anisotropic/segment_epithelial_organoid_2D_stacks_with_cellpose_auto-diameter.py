@@ -27,6 +27,7 @@ if __name__=="__main__":
     import skimage.segmentation as sksegmentation 
     import skimage.filters as skfilters
     import os 
+    import scipy.io as spio
     
     import segment3D.parameters as uSegment3D_params # this is useful to call default parameters, and keep track of parameter changes and for saving parameters.  
     import segment3D.segmentation as uSegment3D_segment
@@ -44,6 +45,13 @@ if __name__=="__main__":
     img = uSegment3D_fio.read_czifile(imgfile)
     
     
+
+    # create a savefolder:
+    savefolder_seg = os.path.join('.', 
+                                  'epidermal_segment_with_cellpose_auto-diameter')
+    uSegment3D_fio.mkdir(savefolder_seg)
+
+
     """
     Visualize the image in max projection, as you can see the cells are very thin and span only a few cells. 
     
@@ -57,7 +65,10 @@ if __name__=="__main__":
     plt.imshow(img.max(axis=1), cmap='gray')
     plt.subplot(133)
     plt.imshow(img.max(axis=2), cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'input_image_max-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    
     
     
     
@@ -83,7 +94,10 @@ if __name__=="__main__":
     plt.imshow(img_preprocess.max(axis=1), cmap='gray')
     plt.subplot(133)
     plt.imshow(img_preprocess.max(axis=2), cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'resize_image_max-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    
     
 
     plt.figure(figsize=(10,10))
@@ -94,7 +108,9 @@ if __name__=="__main__":
     plt.imshow(img_preprocess[:,img_preprocess.shape[1]//2], cmap='gray')
     plt.subplot(133)
     plt.imshow(img_preprocess[:,:,img_preprocess.shape[2]//2], cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'resize_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
     
     
     """
@@ -113,12 +129,21 @@ if __name__=="__main__":
     plt.imshow(img_preprocess_bg_remove[:,img_preprocess.shape[1]//2], cmap='gray')
     plt.subplot(133)
     plt.imshow(img_preprocess_bg_remove[:,:,img_preprocess.shape[2]//2], cmap='gray')
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'preprocessed_image_midslice-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
     
+    plt.close('all')
     
     # use now the background corrected 
     img_preprocess = img_preprocess_bg_remove.copy()
     
+
+    # save the preprocessed image. 
+    skio.imsave(os.path.join(savefolder_seg, 
+                             'preprocessed_image_input.tif'), 
+                np.uint8(255.*img_preprocess))
+
     # =============================================================================
     # =============================================================================
     # #     2. Run Cellpose 2D slice-by-slice, optimizing the parameter and parsing the segmentation using u-Segment3D method
@@ -198,6 +223,11 @@ if __name__=="__main__":
     psf = psf/float(np.sum(psf))
     
     
+    save_2D_segmentation_plotsfolder = os.path.join(savefolder_seg, 
+                                                    '2D_cell_segment')
+    uSegment3D_fio.mkdir(save_2D_segmentation_plotsfolder)
+
+    
     # iterate over the stack
     for dd in np.arange(len(img_preprocess))[:]:
         
@@ -262,10 +292,12 @@ if __name__=="__main__":
         """
         marked = sksegmentation.mark_boundaries(np.dstack([im_slice, im_slice, im_slice]), 
                                                 cell_seg_connected_original, mode='thick')
-        plt.figure()
+        plt.figure(figsize=(10,10))
         plt.imshow(marked)                                         
-        plt.show()
-        
+        plt.savefig(os.path.join(save_2D_segmentation_plotsfolder,
+                                 'xy_slice_z-'+str(dd).zfill(3)+'.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+        plt.close('all')
         
         all_probs_stack.append(all_probs)
         all_flows_stack.append(all_flows)
@@ -285,17 +317,6 @@ if __name__=="__main__":
     
         
         
-    
-    # """
-    # Save out all the intermediates  (check out zarr for lazy loading these as metadata in one file. )
-    # """
-    
-    import scipy.io as spio
-    
-    # create a savefolder:
-    savefolder_seg = os.path.join('.', 
-                                  'epidermal_segment_with_cellpose_auto-diameter')
-    uSegment3D_fio.mkdir(savefolder_seg)
     
     view = 'xy'
     basename = os.path.split(imgfile)[-1].split('.tif')[0]
@@ -413,7 +434,10 @@ if __name__=="__main__":
                                                           img_preprocess[:,:,img_preprocess.shape[2]//2]]),
                                               segmentation3D_filt[:,:,img_preprocess.shape[2]//2], 
                                               color=(0,1,0), mode='thick'))
-    plt.show()
+    plt.savefig(os.path.join(savefolder_seg,
+                             'segmentation_filt_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+    plt.show(block=False)
+    plt.close('all')
     
     
     # save the segmentation 
