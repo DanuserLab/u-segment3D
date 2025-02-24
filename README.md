@@ -39,7 +39,13 @@ u-Segment3D has a number of dependencies detailed in the requirements.txt. GPU d
 
 
 ## Installation
-u-Segment3D can be installed by git cloning the repository and running pip in the cloned folder with python>=3.9. We have developed on Python==3.9 on Red Hat Enterprise Linux Server 7.9. `setup.py` will automatically identify OS to use the correct requirements.py file.
+u-Segment3D can be installed for all three major OS from PyPI. We recommend installing to a new conda environment:
+```
+conda create -n u_Segment3D_env python=3.9
+pip install u-Segment3D
+```
+
+u-Segment3D can also be installed by git cloning the repository and running pip in the cloned folder with python>=3.9. We have developed on Python==3.9 on Red Hat Enterprise Linux Server 7.9. `pyproject.toml` configures the individual dependencies for each OS.
 
 ### Linux
 We suggest first creating a new conda environment for install and use conda to install cudatoolkit and cudnn first: 
@@ -100,7 +106,10 @@ pip install .
 ```
 
 ## Getting Started
-The simplest way to get started is to check out the included notebook tutorials which aims to showcase various use cases of u-Segment3D for 3D segmentation and how parameters may be tuned and algorithms adapted. 
+The simplest way to get started is to check out the included notebook tutorials which aims to showcase various use cases of u-Segment3D for 3D segmentation and how parameters may be tuned and algorithms adapted. A pictorial diagram is provided to show how tutorial scripts relate:
+<p align="center">
+  <img src="docs/imgs/tutorials_flowchart_cheatsheet.png" width="1000"/>
+</p>
 
 The easiest way to use u-Segment3D is the indirect method. If you have 2D slice-by-slice instance segmentation masks of cells in xy, xz, and yz views, then you can translate these into one 3D instance segmentation mask with a few lines of code:
 ```
