@@ -20,7 +20,7 @@ description="Generate consensus 3D segmentation from 2D segmented stacks"
 authors = [{name='Felix Y. Zhou', email='felixzhou1@gmail.com'}]
 readme = "README.md"
 license={file = "LICENSE"}
-version = "0.1.0"
+version = "0.1.1"
 classifiers = [
     "Intended Audience :: Developers",
     "Operating System :: POSIX :: Linux",
@@ -32,7 +32,7 @@ classifiers = [
 
 requires-python = ">=3.9"
 dependencies = [
-    'cellpose',
+    'cellpose<4.0',
     'cupy-cuda11x; sys_platform!="darwin"',
     'dask[complete]',
     'scikit-image',
@@ -41,6 +41,7 @@ dependencies = [
     'opencv-python-headless',
     'scipy',
     'numpy<2.0',
+    'numba',
     'matplotlib',
     'seaborn',
     'trimesh',

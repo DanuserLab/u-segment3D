@@ -1051,7 +1051,8 @@ def mp_gradient_watershed3D_binary(binary,
                                                             renorm_gradient=renorm_gradient,
                                                             binary_mask_gradient=binary_mask_gradient,
                                                             debug_viz=False) # 50 seems not enough for 3D... as it is very connected. 
-
+        res = res.astype(np.float32)
+        
         if len(res)>0:
             # # keep only the points starting within the non-overlapped region!. 
             # # trunk out the overlapping region 

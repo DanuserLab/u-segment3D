@@ -126,8 +126,12 @@ def Cellpose2D_model_auto(img, view, params, basename=None, savefolder=None):
     """
     from cellpose import models
     import scipy.io as spio 
+    import cellpose
     
-    model = models.Cellpose(model_type=params['cellpose_modelname'], gpu=params['gpu'])
+    if int(cellpose.version.split('.')[0])<4:
+        model = models.Cellpose(model_type=params['cellpose_modelname'], gpu=params['gpu'])
+    else:
+        model = models.CellposeModel(pretrained_model=params['cellpose_modelname'], gpu=params['gpu'])
     
     grayscale_bool = params['cellpose_channels'] =='grayscale'
     if grayscale_bool:

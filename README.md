@@ -12,12 +12,19 @@
       + [Windows](#windows)
       + [MacOS](#macos)
    * [Getting Started](#getting-started)
+      + [Direct Method (cell gradients and probability maps as input) in a nutshell](#direct-method-cell-gradients-and-probability-maps-as-input-in-a-nutshell)
+      + [Indirect Method (instance segmentation masks as input) in a nutshell](#indirect-method-instance-segmentation-masks-as-input-in-a-nutshell)
+      + [Choosing an Indirect Method Distance Transform](#choosing-an-indirect-method-distance-transform)
       + [Example Data](#example-data)
       + [Example Scripts](#example-scripts)
    * [Overview of Library Features](#overview-of-library-features)
    * [Questions and Issues](#questions-and-issues)
    * [Danuser Lab Links](#danuser-lab-links)
 <!-- TOC end -->
+
+#### June 2025
+- we have updated API to add compatibility with Cellpose4 changes. u-Segment3D should work with cellpose>=4.0.5. If this is not available from pip, you will need to install the github version of cellpose: `pip install git+https://www.github.com/mouseland/cellpose.git`
+- Note: In Cellpose4, the cellpose-SAM model ('cpsam') is the default. As of writing it seems 'cyto3', 'cyto2', 'cyto' etc. are no longer built-in. Therefore currently u-Segment3D will install as dependency **Cellpose3**. This will allow most flexibility for users.  
 
 #### :star2: Mar 2025 :star2:
 - u-Segment3D is available in PyPI and can be directly installed with `pip install u-Segment3D`
@@ -28,7 +35,7 @@ Despite the name, the postprocessing and segmentation functions in u-Segment3D h
 
 The primary motivation in developing u-Segment3D is to take advantage and leverage existing state-of-the-art 2D segmentation models for 3D segmentation without further data training. 
 
-It is associated with the BioArxiv paper, [**A general algorithm for consensus 3D cell segmentation from 2D segmented stacks**](https://doi.org/10.1101/2024.05.03.592249), *bioRxiv*, 2024, written by Felix Y. Zhou, Clarence Yapp, Zhiguo Shang, Md Torikul Islam, Benjamin Nanes, Edward Jenkins, Gabriel M. Gihana, Bo-Jui Chang, Andrew Weems, Michael Dustin, Sean Morrison, Reto Fiolka, Kevin Dean, Andrew Jamieson, Peter K. Sorger and [Gaudenz Danuser](https://www.danuserlab-utsw.org/).
+It is associated with the BioArxiv paper, [**Universal consensus 3D segmentation of cells from 2D segmented stacks**](https://www.biorxiv.org/content/10.1101/2024.05.03.592249v3), *bioRxiv*, 2025, written by Felix Y. Zhou, Zach Marin, Clarence Yapp, Qiongjing Zhou, Benjamin A. Nanes, Stephan Daetwyler, Andrew R. Jamieson, Md Torikul Islam, Edward Jenkins, Gabriel M. Gihana, Jinlong Lin, Hazel M.Borges, Bo-Jui Chang, Andrew Weems, Sean J. Morrison, Peter K. Sorger, Reto Fiolka, Kevin Dean, and [Gaudenz Danuser](https://www.danuserlab-utsw.org/).
 
 The current library is still a work-in-progress. It is fully functional but documentation still require work and more tutorials are upcoming. 
 
@@ -156,6 +163,55 @@ segmentation3D, (probability3D, gradients3D) = uSegment3D.aggregate_2D_to_3D_seg
 ``` 
 
 **NOTE: for both direct and indirect method above, you can use the empty list `[]` if you do not have segmentation or gradients in one or more orthoviews. This is how u-Segment3D permits 3D translation from any combination of orthoviews**
+
+#### Choosing an Indirect Method Distance Transform
+Choosing a distance transform is a tradeoff for computational speed and accuracy. u-Segment3D provides distance transforms which specify a medial-axis skeleton implicitly and explicitly. If you have tubular, skeletal data, the implicit Euclidean Distance Transform works well. If you have convex cells, the explicit point-source transform, primarily the heat diffusion used also by Cellpose is good. For mixture of arbitrary morphologies, the explicit skeletal point-set transform is best, where u-Segment3D first estimates the medial-axis skeleton with binary morphological operations, then solves the heat diffusion equation using the skeletal points as sources.
+
+The distance transform types available in u-Segmented are summarized visually in the figure.
+<p align="center">
+  <img src="docs/imgs/different_available_transforms.JPG" width="1000"/>
+</p>
+<p align="center">
+  <img src="docs/imgs/transforms_and_shape_suitability.JPG" width="1000"/>
+</p>
+
+The distance transforms are specified by modifying the default parameters imported from parameters.py
+```
+import segment3D.parameters as uSegment3D_params
+
+# Get the default parameters. 
+indirect_aggregation_params = uSegment3D_params.get_2D_to_3D_aggregation_params()
+
+"""
+# a) using Explicit Point Source Distance transforms (either heat diffusion or geodesic)
+"""
+indirect_aggregation_params['indirect_method']['dtform_method'] = 'cellpose_improve' # exact version of Cellpose's iterative heat diffusion
+indirect_aggregation_params['indirect_method']['dtform_method'] = 'fmm' # Fast marching solved geodesic variant 
+indirect_aggregation_params['indirect_method']['edt_fixed_point_percentile'] = 0.01 # adjustment of where to place the medial centroid point. The higher this is, the more the centroid is sampled from only the ridges of the Euclidean Distance Transform. 
+    
+"""
+# b) 
+"""
+# 1. uses heat diffusion skeleton
+indirect_aggregation_params['indirect_method']['dtform_method'] = 'cellpose_skel' 
+# 2. uses Fast marching method solved geodesic skeleton
+indirect_aggregation_params['indirect_method']['dtform_method'] = 'fmm_skel' 
+
+# For both, medial-axis skeleton is found by skimage.morphology.skeletonize. This can result in skeletons with erroneous or too much bifurcations. The following parameters control the smoothing of the skeleton by Gaussian filtering then rebinarizing with a threshold
+indirect_aggregation_params['indirect_method']['smooth_skel_sigma'] = 1 
+indirect_aggregation_params['gradient_descent']['gradient_decay'] = 0.25
+
+"""
+# c) Implicit Skeletal Distance Transform (Euclidean Distance Transform)
+"""
+indirect_aggregation_params['indirect_method']['dtform_method'] = 'edt' # Uses edt package (https://pypi.org/project/edt/) for fast evaluation. 
+    
+"""
+The distance transforms can be further adjusted by modifying gradient decay rate.
+"""
+indirect_aggregation_params['gradient_descent']['gradient_decay'] = 0.25
+    
+```
 
 ### Example Data
 Please download the zipped folder containing example data from the [link](https://www.dropbox.com/scl/fo/le8rjbrohg9p29kebq25f/ANp7T7Z7bh4GsaphRmp7Qc0?rlkey=prgj9mxlluy8cl7x68ygtrigz&st=x89yerip&dl=0). The following examples assume you have unzipped the data to the `example_data/` directory of this repository, and is running the examples after installation from their current location in the repository. Please adjust filepaths accordingly, if otherwise. 

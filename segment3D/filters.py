@@ -292,6 +292,47 @@ def filter_2d_label_slices(labelled,bg_label=0, minsize=10):
     return labelled_
 
 
+def detect_and_relabel_multi_component_labels(labels, min_size=100):
+    
+    import skimage.measure as skmeasure
+    import skimage.morphology as skmorph
+    
+    labels_filt = np.zeros_like(labels)
+    
+    max_id = 1
+
+    regionprops = skmeasure.regionprops(labels)
+    
+    for cc, re in enumerate(regionprops[:]):
+        
+        bbox = re.bbox
+        coords = re.coords
+        
+        x1,y1,z1 = bbox[:3]
+        bbox_size = np.hstack(bbox[3:]) - np.hstack(bbox[:3])
+        
+        mask = np.zeros(bbox_size, dtype=bool)
+        mask[coords[:,0]-x1,
+             coords[:,1]-y1,
+             coords[:,2]-z1] = 1
+        
+        mask = skmorph.remove_small_objects(mask, min_size=min_size)
+        label_mask = skmeasure.label(mask>0)
+        
+        label_ids = np.setdiff1d(np.unique(label_mask),0)
+        
+        for ll in label_ids:
+            coords_ll = np.argwhere(label_mask==ll)
+            coords_ll = coords_ll + np.hstack(bbox[:3])
+            
+            labels_filt[coords_ll[:,0], 
+                                coords_ll[:,1], 
+                                coords_ll[:,2]] = max_id
+            max_id += 1
+    
+    return labels_filt
+
+
 def filter_segmentations_axis(labels, window=3, min_count=1):
     """ according to the persistence along 1 direction. - this works and is relatively fast. 
     """
@@ -486,6 +527,48 @@ def remove_small_labels(labels, min_size=64):
         return labels
     
     
+def intensity_filter_labels(labels, intensity_img, threshold=None, auto_thresh_method='Otsu'):
+    
+    import skimage.measure as skmeasure 
+    import skimage.filters as skfilters
+
+    labels_filt = labels.copy()
+    regionprops = skmeasure.regionprops(labels)
+    
+    all_region_I = [] 
+    all_region_I_inds = []
+    
+    for ind, reg in enumerate(regionprops):
+        coords = reg.coords
+        coords_I = np.nanmean(intensity_img[coords[:,0], 
+                                            coords[:,1],
+                                            coords[:,2]])
+        all_region_I.append(coords_I)
+        all_region_I_inds.append(ind)
+        
+    if len(all_region_I) > 0:
+        all_region_I = np.hstack(all_region_I)
+        all_region_I_inds = np.hstack(all_region_I_inds)
+        
+        if threshold is None:
+            if auto_thresh_method == 'Otsu':
+                threshold = skfilters.threshold_otsu(all_region_I)
+            elif auto_thresh_method == 'Mean':
+                threshold = np.nanmean(all_region_I)
+            elif auto_thresh_method == 'Median':
+                threshold = np.nanmedian(all_region_I)
+            else:
+                threshold = skfilters.threshold_otsu(all_region_I)
+        
+        remove_inds = all_region_I_inds[all_region_I<threshold]
+        
+        for rr in remove_inds:
+            coords = regionprops[rr].coords
+            labels_filt[coords[:,0], coords[:,1], coords[:,2]] = 0 # zero out
+        
+    return labels_filt
+            
+        
 def expand_masks(label_seeds, binary, dist_tform=None):
     
     import skimage.measure as skmeasure 
