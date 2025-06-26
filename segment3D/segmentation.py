@@ -346,7 +346,7 @@ def apply_cellpose_model_2D_prob_slice(im_slice,
 
     # test_slice = im_slice.copy()
 
-    if cellpose.version.split('.')<4:
+    if int(cellpose.version.split('.')[0])<4:
         model_eval = model.cp.eval
     else:
         model_eval = model.eval
@@ -785,7 +785,7 @@ def apply_cellpose_model_2D_prob_multiscale(im_stack, model,
     from scipy.signal import find_peaks
     import cellpose
     
-    if cellpose.version.split('.')<4:
+    if int(cellpose.version.split('.')[0])<4:
         model_eval = model.cp.eval
     else:
         model_eval = model.eval

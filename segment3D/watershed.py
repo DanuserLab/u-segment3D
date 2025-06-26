@@ -466,8 +466,11 @@ def gradient_watershed3D_binary(binary,
     import skimage.measure as skmeasure 
     import skimage.segmentation as sksegmentation 
     from tqdm import tqdm 
-    from .plotting import set_axes_equal
-    
+    #from .plotting import set_axes_equal
+    import importlib
+    plotting = importlib.import_module(f"{__package__}.plotting")
+    set_axes_equal = plotting.set_axes_equal
+
     if gradient_img is not None:
         sdf_normals = gradient_img.transpose(3,0,1,2) # use the supplied gradients! 
         if binary_mask_gradient:
@@ -799,7 +802,11 @@ def gradient_watershed3D_binary_dynamics(binary,
     import skimage.measure as skmeasure 
     import skimage.segmentation as sksegmentation 
     from tqdm import tqdm 
-    from .plotting import set_axes_equal
+    #from .plotting import set_axes_equal
+    import importlib
+    plotting = importlib.import_module(f"{__package__}.plotting")
+    set_axes_equal = plotting.set_axes_equal
+
     
     if gradient_img is not None:
         sdf_normals = gradient_img.transpose(3,0,1,2) # use the supplied gradients! 
