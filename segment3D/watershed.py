@@ -470,7 +470,7 @@ def gradient_watershed3D_binary(binary,
     import importlib
     plotting = importlib.import_module(f"{__package__}.plotting")
     set_axes_equal = plotting.set_axes_equal
-
+    
     if gradient_img is not None:
         sdf_normals = gradient_img.transpose(3,0,1,2) # use the supplied gradients! 
         if binary_mask_gradient:
