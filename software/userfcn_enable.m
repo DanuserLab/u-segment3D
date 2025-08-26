@@ -15,7 +15,7 @@ function userfcn_enable (index, onoff, handles, check)
 % Chuangang Ren
 % 08/2010
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

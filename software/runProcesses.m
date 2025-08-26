@@ -1,7 +1,7 @@
 function [ p ] = runProcesses( p, varargin )
 %runProcesses Runs a cell array of processes
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

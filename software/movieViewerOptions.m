@@ -17,8 +17,10 @@ function optionsFig = movieViewerOptions(mainFig)
 %
 % Sebastien Besson, Nov 2012
 % Andrew R. Jamieson - Modified Feb 2017
+% Hillary Wong and Qiongjing (Jenny) Zou, added sliders for color limits. - Nov 2024. - Does not work if clim is not 0-1
+% Qiongjing (Jenny) Zou, Rewrote adding sliders for color limits. Kept text boxes for color limits. Works for clim is any range. - April 2025
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -166,14 +168,22 @@ uicontrol(imagePanel,'Style','edit','Position',[130 hPosition 70 20],...
 hPosition=hPosition+30;
 uicontrol(imagePanel,'Style','text','Position',[20 hPosition-2 100 20],...
     'String','Color limits','HorizontalAlignment','left');
-uicontrol(imagePanel,'Style','edit','Position',[130 hPosition 70 20],...
+
+uicontrol(imagePanel,'Style','edit','Position',[180 hPosition 50 20],...
     'String','','BackgroundColor','white','Tag','edit_cmin',...
     'Callback',@(h,event) setCLim(guidata(h)));
-uicontrol(imagePanel,'Style','edit','Position',[200 hPosition 70 20],...
+uicontrol(imagePanel,'Style','edit','Position',[320 hPosition 50 20],...
     'String','','BackgroundColor','white','Tag','edit_cmax',...
     'Callback',@(h,event) setCLim(guidata(h)));
 
-hPosition=hPosition+30;
+% Added sliders for editable text boxes for color limits, April 2025
+uicontrol(imagePanel, 'Style','slider', 'Tag', 'slider_cmin', 'Position', [100 hPosition 70 20], 'Min', 0, 'Max', Inf, ...
+     'SliderStep', [0.01 0.01], 'Callback',@(h,event) setCLimSlider(guidata(h)));
+uicontrol(imagePanel, 'Style','slider', 'Tag', 'slider_cmax', 'Position', [240 hPosition 70 20], 'Min', 0, 'Max', Inf, ...
+     'SliderStep', [0.01 0.01], 'Callback',@(h,event) setCLimSlider(guidata(h)));
+
+
+hPosition=hPosition+36;
 uicontrol(imagePanel,'Style','text','Position',[20 hPosition-2 80 20],...
     'String','Colormap','HorizontalAlignment','left');
 uicontrol(imagePanel,'Style','popupmenu',...
@@ -400,6 +410,50 @@ function setCLim(handles)
 clim=[str2double(get(handles.edit_cmin,'String')) ...
     str2double(get(handles.edit_cmax,'String'))];
 
+% Ensure clim(1) is less than clim(2) to avoid error, April 2025
+maxVal = max(clim(2), 0);
+minVal = max(clim(1), 0);
+if minVal >= maxVal
+    if maxVal < 0.0001
+        maxVal = 0.0001;
+        minVal = 0;
+    elseif maxVal == get(handles.slider_cmax, 'Min')
+        minVal = maxVal;
+        maxVal = maxVal + 0.0001;
+    else
+        minVal = max(0, maxVal - 0.0001);
+    end
+end
+clim=[minVal maxVal];
+
+% redrawImageFcn below will call setImageOptions to update clim sliders according to the edit boxes
+
+userData = get(handles.figure1,'UserData');
+userData.redrawImageFcn(handles,'CLim',clim)
+
+function setCLimSlider(handles)
+% Callback fcn for color limits sliders, April 2025
+clim=[get(handles.slider_cmin,'Value') ...
+    get(handles.slider_cmax,'Value')];
+
+% Ensure clim(1) is less than clim(2) to avoid error, April 2025
+maxVal = max(clim(2), 0);
+minVal = max(clim(1), 0);
+if minVal >= maxVal
+    if maxVal < 0.0001
+        maxVal = 0.0001;
+        minVal = 0;
+    elseif maxVal == get(handles.slider_cmax, 'Min')
+        minVal = maxVal;
+        maxVal = maxVal + 0.0001;
+    else
+        minVal = max(0, maxVal - 0.0001);
+    end
+end
+clim=[minVal maxVal];
+
+% redrawImageFcn below will call setImageOptions to update clim edit boxes according to the clim sliders
+
 userData = get(handles.figure1,'UserData');
 userData.redrawImageFcn(handles,'CLim',clim)
 
@@ -500,6 +554,19 @@ end
 if ~isempty(clim)
     set(handles.edit_cmin,'Enable','on','String',clim(1));
     set(handles.edit_cmax,'Enable','on','String',clim(2));
+    % update values of color limits sliders, April 2025:
+    set(handles.slider_cmin,'Enable','on','Value',clim(1));
+    set(handles.slider_cmax,'Enable','on','Value',clim(2));
+
+    % Only set Sliders Min/Max once after movieViewerOptions opens, April 2025
+    if isempty(get(handles.slider_cmin, 'UserData'))
+        set(handles.slider_cmin, 'Min', clim(1), 'Max', clim(2));
+        set(handles.slider_cmin, 'UserData', true); % set flag
+    end
+    if isempty(get(handles.slider_cmax, 'UserData'))
+        set(handles.slider_cmax, 'Min', clim(1), 'Max', clim(2));
+        set(handles.slider_cmax, 'UserData', true); % set flag
+    end
 end
 
 set(handles.edit_imageScaleFactor, 'Enable', 'on',...

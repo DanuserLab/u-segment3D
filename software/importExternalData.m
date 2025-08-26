@@ -25,7 +25,12 @@ function importExternalData(movieData, processClass, varargin)
 %t  
 % Sebastien Besson, Nov 2014
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Updated by Qiongjing (Jenny) Zou, Dec 2024
+% 1. To accept image stack as external masks
+% 2. Make sure the external masks have the same nFrames as the movie
+% 3. Make sure the external masks are imread readable and binary
+%
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -90,13 +95,58 @@ dummyProc.setInFilePaths(inFilePaths);
 
 % Setup the output directories
 outFilePaths = cell(1,nChan);
-if ~isdir(p.OutputDirectory), mkdir(p.OutputDirectory); end
+mkClrDir(p.OutputDirectory);
 for  i = channelIndex
     [~, name, ext] = fileparts(p.InputData{i});
-    if isempty(ext)
-        copyfile(p.InputData{i}, fullfile(p.OutputDirectory, name));
-        outFilePaths{1,i} = fullfile(p.OutputDirectory, name);
+    if isempty(ext) % when InputData is a directory
+        chaniPath = fullfile(p.OutputDirectory, sprintf('ExternalMask_Chan%d', i));
+        mkdir(chaniPath);
+        % Check images in InPut path are single images or an image stack
+        imageFiles = dir(fullfile(p.InputData{i}, '*.*'));
+        imageFiles = imageFiles(~[imageFiles.isdir]); % Remove directories
+        if ~isequal(numel(imageFiles), movieData.nFrames_)
+            if numel(imageFiles) > 1
+                error('For channel %d, the number of external masks does not match the number of frames in the movie, and it is not a single image stack either.', i);
+            end
+            % If is a stack image, convert and save to single images
+            fprintf('Converting image stack in channel %d...\n', i);
+            tifFilePath = fullfile(p.InputData{i}, imageFiles(1).name);
+            try
+                tifInfo = imfinfo(tifFilePath);
+                if ~isequal(numel(tifInfo), movieData.nFrames_)
+                    error('For channel %d, the number of external masks in the stack does not match the number of frames in the movie.', i);
+                end
+                for k = 1:numel(tifInfo)
+                    img = imread(tifFilePath, k); % Read k-th frame
+                    % Check if the image is binary
+                    if numel(unique(img)) ~= 2
+                        error('Image in folder %s is not a binary image.', p.InputData{i});
+                    end
+                    outputFileName = fullfile(chaniPath, sprintf('ExternalMask_%04d.tif', k));
+                    imwrite(img, outputFileName);
+                end
+            catch ME
+                fprintf('Error processing image stack masks in channel %d: %s\n', i, ME.message);
+            end
+        else
+            % If single images, just check if the first frame is imread reable and binary.
+            try
+                firstImagePath = fullfile(p.InputData{i}, imageFiles(1).name);
+                firstImage = imread(firstImagePath);
+                % Check if the image is binary
+                if numel(unique(firstImage)) ~= 2
+                    error('The external masks are not binary images.');
+                end
+                copyfile(p.InputData{i}, chaniPath);
+            catch ME
+                fprintf('Error processing single image masks for channel %d: %s\n', i, ME.message);
+            end
+        end
+        outFilePaths{1, i} = chaniPath;
     else
+        % If the file has an extension, just copy the file - not sure
+        % why it is written like this, this part seems not called, b/c
+        % InputData need to be folder on GUI.
         copyfile(p.InputData{i}, p.OutputDirectory);
         outFilePaths{1,i} = fullfile(p.OutputDirectory, [name ext]);
     end

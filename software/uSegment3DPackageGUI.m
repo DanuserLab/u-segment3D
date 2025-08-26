@@ -5,7 +5,7 @@ function varargout = uSegment3DPackageGUI(varargin)
 % arguments and returns all output arguments of packageGUI
 %
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

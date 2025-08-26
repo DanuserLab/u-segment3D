@@ -19,7 +19,7 @@ function processGUI_OpeningFcn(hObject, eventdata, handles, string,varargin)
 %
 % Sebastien Besson May 2011
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -137,8 +137,9 @@ if isempty(userData.crtProc)
 end
 
 % Check for multiple movies else
+% Modified the section below to make sure checkbox(Apply Check/Uncheck to All Movies) work properly for ML input packages as well. - 2019 & 2024
 if isfield(handles,'checkbox_applytoall')
-    if ~isa(userData_main.crtPackage, 'XcorrFluctuationPackage')
+    if ~any(cellfun(@(MLpackList) isa(userData.crtPackage, MLpackList), inputMLPackageList()))
         if ~isempty(userData_main.MD) && isempty(userData_main.ImD)
             if numel(userData_main.MD) ==1
                 set(handles.checkbox_applytoall,'Value',0,'Visible','off');

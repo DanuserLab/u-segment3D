@@ -3,7 +3,7 @@ function userfcn_checkAllMovies(procID, value, handles)
 % Add ImageData compatibility
 % Updated by Qiongjing (Jenny) Zou, July 2020
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -25,7 +25,8 @@ function userfcn_checkAllMovies(procID, value, handles)
 if get(handles.checkbox_all, 'Value')
     
     userData = get(handles.figure1, 'UserData');
-    if ~isa(userData.crtPackage, 'XcorrFluctuationPackage')
+    % Modified the section below to make sure checkbox(Apply Check/Uncheck to All Movies) work properly on packageGUI for ML input packages as well. -2019 & 2024
+    if ~any(cellfun(@(MLpackList) isa(userData.crtPackage, MLpackList), inputMLPackageList()))
         if ~isempty(userData.MD) && isempty(userData.ImD)
             n = length(userData.MD);
         elseif isempty(userData.MD) && ~isempty(userData.ImD)

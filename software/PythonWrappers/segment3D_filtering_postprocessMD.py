@@ -112,31 +112,79 @@ def segment3D_filtering_postprocessMD(input_path, output_path, params, aggregati
                                                   'uSegment3D_blebs_labels_postprocess_filtering.tif'), segmentation3D_filt)
     
     
-    ### we can overlay the midslice segmentation to the midslices of the image to check segmentation. You can see its quite good, but doesn't capture subcellular details
-    plt.figure(figsize=(10,10))
-    plt.subplot(131)
-    plt.title('Mid Slices Segmentation Overlay')
-    plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[img_preprocess.shape[0]//2], 
-                                                         img_preprocess[img_preprocess.shape[0]//2], 
-                                                         img_preprocess[img_preprocess.shape[0]//2]]),
-                                              segmentation3D_filt[img_preprocess.shape[0]//2], 
-                                              color=(0,1,0), mode='thick'))
-    plt.subplot(132)
-    plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[:,img_preprocess.shape[1]//2], 
-                                                         img_preprocess[:,img_preprocess.shape[1]//2], 
-                                                         img_preprocess[:,img_preprocess.shape[1]//2]]),
-                                              segmentation3D_filt[:,img_preprocess.shape[1]//2], 
-                                              color=(0,1,0), mode='thick'))
-    plt.subplot(133)
-    plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[:,:,img_preprocess.shape[2]//2], 
-                                                         img_preprocess[:,:,img_preprocess.shape[2]//2], 
-                                                         img_preprocess[:,:,img_preprocess.shape[2]//2]]),
-                                              segmentation3D_filt[:,:,img_preprocess.shape[2]//2], 
-                                              color=(0,1,0), mode='thick'))
-    plt.savefig(os.path.join(saveFolderStep4, 'Mid_Slices_Segmentation_Overlay.tif'))
-    plt.show(block=False)
-    
-    
+    if len(img_preprocess.shape) == 3:
+        ### we can overlay the midslice segmentation to the midslices of the image to check segmentation. You can see its quite good, but doesn't capture subcellular details
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Mid Slices Segmentation Overlay')
+        plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[img_preprocess.shape[0]//2], 
+                                                             img_preprocess[img_preprocess.shape[0]//2], 
+                                                             img_preprocess[img_preprocess.shape[0]//2]]),
+                                                  segmentation3D_filt[img_preprocess.shape[0]//2], 
+                                                  color=(0,1,0), mode='thick'))
+        plt.subplot(132)
+        plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[:,img_preprocess.shape[1]//2], 
+                                                             img_preprocess[:,img_preprocess.shape[1]//2], 
+                                                             img_preprocess[:,img_preprocess.shape[1]//2]]),
+                                                  segmentation3D_filt[:,img_preprocess.shape[1]//2], 
+                                                  color=(0,1,0), mode='thick'))
+        plt.subplot(133)
+        plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[:,:,img_preprocess.shape[2]//2], 
+                                                             img_preprocess[:,:,img_preprocess.shape[2]//2], 
+                                                             img_preprocess[:,:,img_preprocess.shape[2]//2]]),
+                                                  segmentation3D_filt[:,:,img_preprocess.shape[2]//2], 
+                                                  color=(0,1,0), mode='thick'))
+        plt.savefig(os.path.join(saveFolderStep4, 'segmentation_filt_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+        
+    else:
+        # check if this is color image, if so transpose:
+            
+        if len(img_preprocess) == 3: 
+            ### we can overlay the midslice segmentation to the midslices of the image to check segmentation. You can see its quite good, but doesn't capture subcellular details
+            img_preprocess = img_preprocess.transpose(1,2,3,0)
+            img_preprocess = img_preprocess/img_preprocess.max()
+            
+            plt.figure(figsize=(10,10))
+            plt.subplot(131)
+            plt.title('Mid Slices Segmentation Overlay')
+            plt.imshow(sksegmentation.mark_boundaries(img_preprocess[img_preprocess.shape[0]//2],
+                                                      segmentation3D_filt[img_preprocess.shape[0]//2], 
+                                                      color=(1,1,1), mode='thick'))
+            plt.subplot(132)
+            plt.imshow(sksegmentation.mark_boundaries(img_preprocess[:,img_preprocess.shape[1]//2],
+                                                      segmentation3D_filt[:,img_preprocess.shape[1]//2], 
+                                                      color=(1,1,1), mode='thick'))
+            plt.subplot(133)
+            plt.imshow(sksegmentation.mark_boundaries(img_preprocess[:,:,img_preprocess.shape[2]//2],
+                                                      segmentation3D_filt[:,:,img_preprocess.shape[2]//2], 
+                                                      color=(1,1,1), mode='thick'))
+            plt.savefig(os.path.join(saveFolderStep4, 'segmentation_filt_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+            plt.show(block=False)
+        else:
+            ### we can overlay the midslice segmentation to the midslices of the image to check segmentation. You can see its quite good, but doesn't capture subcellular details
+            plt.figure(figsize=(10,10))
+            plt.subplot(131)
+            plt.title('Mid Slices Segmentation Overlay')
+            plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[1][img_preprocess.shape[1]//2], 
+                                                                 img_preprocess[1][img_preprocess.shape[1]//2], 
+                                                                 img_preprocess[1][img_preprocess.shape[1]//2]]),
+                                                      segmentation3D_filt[img_preprocess.shape[1]//2], 
+                                                      color=(0,1,0), mode='thick'))
+            plt.subplot(132)
+            plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[1][:,img_preprocess.shape[2]//2], 
+                                                                 img_preprocess[1][:,img_preprocess.shape[2]//2], 
+                                                                 img_preprocess[1][:,img_preprocess.shape[2]//2]]),
+                                                      segmentation3D_filt[:,img_preprocess.shape[2]//2], 
+                                                      color=(0,1,0), mode='thick'))
+            plt.subplot(133)
+            plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[1][:,:,img_preprocess.shape[3]//2], 
+                                                                 img_preprocess[1][:,:,img_preprocess.shape[3]//2], 
+                                                                 img_preprocess[1][:,:,img_preprocess.shape[3]//2]]),
+                                                      segmentation3D_filt[:,:,img_preprocess.shape[3]//2], 
+                                                      color=(0,1,0), mode='thick'))
+            plt.savefig(os.path.join(saveFolderStep4, 'segmentation_filt_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+            plt.show(block=False)
     plt.close('all')
 
     print("Finish u-segment3D Package Step 4 Segmentation filtering Postprocessing successfully")

@@ -67,18 +67,22 @@ def segment3D_2Dto3D_aggregationMD(input_path, output_path, params):
     # =============================================================================
     #     Load the saved output from previous step - QZ
     # =============================================================================
-    img_segment_3D_xy_probs = uSegment3D_fio.read_pickle(os.path.join(inputFolder, 'xy_cellpose_probs_xy.pkl'))['prob']
+    cellpost_inputFolder_xy = os.path.join(inputFolder, 'cellpose_xy')
+    cellpost_inputFolder_xz = os.path.join(inputFolder, 'cellpose_xz')
+    cellpost_inputFolder_yz = os.path.join(inputFolder, 'cellpose_yz')
 
-    img_segment_3D_xz_probs = uSegment3D_fio.read_pickle(os.path.join(inputFolder, 'xz_cellpose_probs_xz.pkl'))['prob']
+    img_segment_3D_xy_probs = uSegment3D_fio.read_pickle(os.path.join(cellpost_inputFolder_xy, 'xy_cellpose_probs_xy.pkl'))['prob']
 
-    img_segment_3D_yz_probs = uSegment3D_fio.read_pickle(os.path.join(inputFolder, 'yz_cellpose_probs_yz.pkl'))['prob']
+    img_segment_3D_xz_probs = uSegment3D_fio.read_pickle(os.path.join(cellpost_inputFolder_xz, 'xz_cellpose_probs_xz.pkl'))['prob']
+
+    img_segment_3D_yz_probs = uSegment3D_fio.read_pickle(os.path.join(cellpost_inputFolder_yz, 'yz_cellpose_probs_yz.pkl'))['prob']
 
 
-    img_segment_2D_xy_flows = uSegment3D_fio.read_pickle(os.path.join(inputFolder, 'xy_cellpose_flows_xy.pkl'))['flow']
+    img_segment_2D_xy_flows = uSegment3D_fio.read_pickle(os.path.join(cellpost_inputFolder_xy, 'xy_cellpose_flows_xy.pkl'))['flow']
 
-    img_segment_2D_xz_flows = uSegment3D_fio.read_pickle(os.path.join(inputFolder, 'xz_cellpose_flows_xz.pkl'))['flow']
+    img_segment_2D_xz_flows = uSegment3D_fio.read_pickle(os.path.join(cellpost_inputFolder_xz, 'xz_cellpose_flows_xz.pkl'))['flow']
 
-    img_segment_2D_yz_flows = uSegment3D_fio.read_pickle(os.path.join(inputFolder, 'yz_cellpose_flows_yz.pkl'))['flow']    
+    img_segment_2D_yz_flows = uSegment3D_fio.read_pickle(os.path.join(cellpost_inputFolder_yz, 'yz_cellpose_flows_yz.pkl'))['flow']    
 
     # =============================================================================
     #     3. We can now use the predicted probabilies and flows directly to aggregate a 3D consensus segmentation (Direct Method)

@@ -20,7 +20,7 @@ function varargout = packageGUI(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -138,10 +138,13 @@ userData.statusM(userData.id).Checked = userfcn_saveCheckbox(handles);
 
 % Set up new movie GUI parameters
 userData.id = mod(newMovieId-1,nMovies)+1;
-if isa(userData.crtPackage, 'XcorrFluctuationPackage')
+
+% Fixed error when switch between Movielists on PackageGUI for ML as input packages: - 2019 & 2024
+if any(cellfun(@(MLpackList) isa(userData.crtPackage, MLpackList), inputMLPackageList()))
     nMovieLists = length(userData.ML);
     userData.id = mod(newMovieId-1,nMovieLists)+1;
 end
+
 userData.crtPackage = userData.package(userData.id);
 set(handles.figure1, 'UserData', userData)
 set(handles.popupmenu_movie, 'Value', userData.id)
@@ -347,21 +350,26 @@ userData = get(handles.figure1, 'UserData');
 prop=get(hObject,'Tag');
 procID = str2double(prop(length('pushbutton_show_')+1:end));
 
-if ~isequal(userData.packageName, 'XcorrFluctuationPackage')
+% Modified the section below, so for ML as input packages, 
+% the Folder Icon (pushbutton_open) can call another GUI named folderViewer to open multiple result folders. - 2019 & 2024
+if ~any(cellfun(@(pkg) isequal(userData.packageName, pkg), inputMLPackageList()))
     % Use the OS-specific command to open result in exploration window
     outputDir = userData.crtPackage.processes_{procID}.funParams_.OutputDirectory;
     if ispc
         winopen(outputDir);
     elseif ismac
-        system(sprintf('open %s',regexptranslate('escape',outputDir)));
+        % system(sprintf('open %s',regexptranslate('escape',outputDir)));
+        system(sprintf('open %s',['"' outputDir '"'])); % ensures special characters i.e. - or spaces are handled correctly, edited by Qiongjing (Jenny) Zou, Oct 2024
     elseif isunix
-        status = system(sprintf('gio open "%s"',regexptranslate('escape',outputDir)));
+        % status = system(sprintf('gio open "%s"',regexptranslate('escape',outputDir)));
+        status = system(sprintf('gio open "%s"',['"' outputDir '"'])); % ensures special characters i.e. - or spaces are handled correctly, edited by Qiongjing (Jenny) Zou, Oct 2024
         % If a non-zero integer is returned, then display a message box
         if(status)
-            msgbox(sprintf('Results can be found under %s',regexptranslate('escape',outputDir)));
+            % msgbox(sprintf('Results can be found under %s',regexptranslate('escape',outputDir)));
+            msgbox(sprintf('Results can be found under %s \n\nHint: check the path, and special characters or spaces in the path',['"' outputDir '"']));
         end
     else
-        msgbox(sprintf('Results can be found under %s',regexptranslate('escape',outputDir)));
+        msgbox(sprintf('Results can be found under %s \n\nHint: check the path, and special characters or spaces in the path',['"' outputDir '"']));
         % SB: Following command not working under Ubuntu (as well as gnome-open
         % & nautilus)
         % system(sprintf('xdg-open %s',regexptranslate('escape',outputDir)));
@@ -611,7 +619,7 @@ function checkbox_tagName_Callback(hObject, eventdata, handles)
 % handles.processTagLabels = findall(0,'-regexp','Tag', 'processTagLabel');
 % handles.processTagLabels;
 
-%% TODO - need refresh of tags after runnings
+%% TODO - need refresh of tags after runnings. from Andrew J. 2018 - DONE by Qiongjing (Jenny) Zou in packageGUI_RefreshFcn.m in Dec 2024
 
 if handles.checkbox_tagName.Value == 0;
     set(handles.processTagLabels, 'Visible', 'off')

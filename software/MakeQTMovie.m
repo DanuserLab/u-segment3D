@@ -28,7 +28,7 @@ function MakeQTMovie(cmd,arg, arg2)
 %	http://web.interval.com/papers/1999-066/
 % (c) Copyright Malcolm Slaney, Interval Research, March 1999.
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

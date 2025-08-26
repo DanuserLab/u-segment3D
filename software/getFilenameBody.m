@@ -38,7 +38,7 @@ function [path,body,no,ext]=getFilenameBody(fname,separator)
 %
 % original author unknown. regexp formulation implemented by jonas
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

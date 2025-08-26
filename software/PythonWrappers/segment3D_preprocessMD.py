@@ -37,6 +37,7 @@ import pylab as plt
 import numpy as np 
 import scipy.ndimage as ndimage
 # import skimage.segmentation as sksegmentation 
+import tifffile
 import os 
 
 import segment3D.parameters as uSegment3D_params # this is useful to call default parameters, and keep track of parameter changes and for saving parameters.  
@@ -68,33 +69,66 @@ def segment3D_preprocessMD(input_path, output_path, params):
 
 
     img = skio.imread(inputFile)
+    
+    # check for rgb and rgba
+    if len(img.shape)>3 and (img.shape[-1] == 3 or img.shape[-1]==4):
+        img = img.transpose(3,0,1,2)
 
+    print(img.shape)
 
     """
-    Visualize the image in max projection and mid-slice to get an idea of how it looks
+    Visualize the image in max projection and mid-slice to get an idea of how it looks, if multichannel visualize the first channel
     """
-    plt.figure(figsize=(10,10))
-    plt.subplot(131)
-    plt.title('Max. Projection')
-    plt.imshow(img.max(axis=0), cmap='gray')
-    plt.subplot(132)
-    plt.imshow(img.max(axis=1), cmap='gray')
-    plt.subplot(133)
-    plt.imshow(img.max(axis=2), cmap='gray')
-    plt.savefig(os.path.join(saveFolderStep1, 'Max_Projection_original.tif'))
-    plt.show(block=False)
-
-
-    plt.figure(figsize=(10,10))
-    plt.subplot(131)
-    plt.title('Mid Slices')
-    plt.imshow(img[img.shape[0]//2], cmap='gray')
-    plt.subplot(132)
-    plt.imshow(img[:,img.shape[1]//2], cmap='gray')
-    plt.subplot(133)
-    plt.imshow(img[:,:,img.shape[2]//2], cmap='gray')
-    plt.savefig(os.path.join(saveFolderStep1, 'Mid_Slices_original.tif'))
-    plt.show(block=False)
+    if len(img.shape) == 3: 
+        # simple single channel volume
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Max. Projection')
+        plt.imshow(img.max(axis=0), cmap='gray')
+        plt.subplot(132)
+        plt.imshow(img.max(axis=1), cmap='gray')
+        plt.subplot(133)
+        plt.imshow(img.max(axis=2), cmap='gray')
+        plt.savefig(os.path.join(saveFolderStep1, 'input_image_max-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+    
+    
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Mid Slices')
+        plt.imshow(img[img.shape[0]//2], cmap='gray')
+        plt.subplot(132)
+        plt.imshow(img[:,img.shape[1]//2], cmap='gray')
+        plt.subplot(133)
+        plt.imshow(img[:,:,img.shape[2]//2], cmap='gray')
+        plt.savefig(os.path.join(saveFolderStep1, 'input_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+    
+    else:
+        # first channel volume display
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Max. Projection')
+        plt.imshow(img[0].max(axis=0), cmap='gray')
+        plt.subplot(132)
+        plt.imshow(img[0].max(axis=1), cmap='gray')
+        plt.subplot(133)
+        plt.imshow(img[0].max(axis=2), cmap='gray')
+        plt.savefig(os.path.join(saveFolderStep1, 'input_image_max-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+    
+    
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Mid Slices')
+        plt.imshow(img[0][img.shape[1]//2], cmap='gray')
+        plt.subplot(132)
+        plt.imshow(img[0][:,img.shape[2]//2], cmap='gray')
+        plt.subplot(133)
+        plt.imshow(img[0][:,:,img.shape[3]//2], cmap='gray')
+        plt.savefig(os.path.join(saveFolderStep1, 'input_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+    
 
     # =============================================================================
     #     1. Preprocess the image. 
@@ -127,37 +161,80 @@ def segment3D_preprocessMD(input_path, output_path, params):
 
     # Save the preprocessed image as a .tif file - QZ
     preprocessed_img_path = os.path.join(saveFolderStep1, 'preprocessed.tif')
-    skio.imsave(preprocessed_img_path, img_preprocess.astype(np.float32))
+    skio.imsave(preprocessed_img_path, img_preprocess.astype(np.float32)) # this will be used for processing. 
+    
+    # save this in imagej format - FZ in float32
+    # save in imagej format, and in 8bit,this is for visualization.
+    preprocessed_img_path = os.path.join(saveFolderStep1, 'preprocessed_imagej.tif')
+    
+    if len(img_preprocess.shape) > 3:
+        tifffile.imwrite(preprocessed_img_path,
+                          np.uint8(255*img_preprocess.transpose(1,0,2,3)[None,...]),
+                          imagej=True,
+                          metadata={'axes': 'TZCYX'})
+    else:
+        skio.imsave(preprocessed_img_path,
+                    np.uint8(255*img_preprocess))
+    
 
     # ##### QZ also save preprocess_params as it is needed in step 5
     # uSegment3D_fio.write_pickle(os.path.join(saveFolderStep1,'preprocess_params.pkl'), preprocess_params)
 
     # have a look at the processed. The result should have better contrast and more uniform illumination of the shape. 
-    plt.figure(figsize=(10,10))
-    plt.subplot(131)
-    plt.title('Max. Projection of preprocessed')
-    plt.imshow(img_preprocess.max(axis=0), cmap='gray')
-    plt.subplot(132)
-    plt.imshow(img_preprocess.max(axis=1), cmap='gray')
-    plt.subplot(133)
-    plt.imshow(img_preprocess.max(axis=2), cmap='gray')
-    plt.savefig(os.path.join(saveFolderStep1, 'Max_Projection_of_preprocessed.tif'))
-    plt.show(block=False)
+    if len(img_preprocess.shape)==3:
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Max. Projection of preprocessed')
+        plt.imshow(img_preprocess.max(axis=0), cmap='gray')
+        plt.subplot(132)
+        plt.imshow(img_preprocess.max(axis=1), cmap='gray')
+        plt.subplot(133)
+        plt.imshow(img_preprocess.max(axis=2), cmap='gray')
+        plt.savefig(os.path.join(saveFolderStep1, 'preprocessed_image_max-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+    
+    
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Mid Slices of preprocessed')
+        plt.imshow(img_preprocess[img_preprocess.shape[0]//2], cmap='gray')
+        plt.subplot(132)
+        plt.imshow(img_preprocess[:,img_preprocess.shape[1]//2], cmap='gray')
+        plt.subplot(133)
+        plt.imshow(img_preprocess[:,:,img_preprocess.shape[2]//2], cmap='gray')
+        plt.savefig(os.path.join(saveFolderStep1, 'preprocessed_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+    else:
 
-
-    plt.figure(figsize=(10,10))
-    plt.subplot(131)
-    plt.title('Mid Slices of preprocessed')
-    plt.imshow(img_preprocess[img_preprocess.shape[0]//2], cmap='gray')
-    plt.subplot(132)
-    plt.imshow(img_preprocess[:,img_preprocess.shape[1]//2], cmap='gray')
-    plt.subplot(133)
-    plt.imshow(img_preprocess[:,:,img_preprocess.shape[2]//2], cmap='gray')
-    plt.savefig(os.path.join(saveFolderStep1, 'Mid_Slices_of_preprocessed.tif'))
-    plt.show(block=False)
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Max. Projection of preprocessed')
+        plt.imshow(img_preprocess[0].max(axis=0), cmap='gray')
+        plt.subplot(132)
+        plt.imshow(img_preprocess[0].max(axis=1), cmap='gray')
+        plt.subplot(133)
+        plt.imshow(img_preprocess[0].max(axis=2), cmap='gray')
+        plt.savefig(os.path.join(saveFolderStep1, 'preprocessed_image_max-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+    
+    
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Mid Slices of preprocessed')
+        plt.imshow(img_preprocess[0][img_preprocess.shape[1]//2], cmap='gray')
+        plt.subplot(132)
+        plt.imshow(img_preprocess[0][:,img_preprocess.shape[2]//2], cmap='gray')
+        plt.subplot(133)
+        plt.imshow(img_preprocess[0][:,:,img_preprocess.shape[3]//2], cmap='gray')
+        plt.savefig(os.path.join(saveFolderStep1, 'preprocessed_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
 
     plt.close('all')
 
+    # save the preprocessed image.
+    skio.imsave(os.path.join(saveFolderStep1,
+                             'preprocessed_image_input.tif'),
+                np.uint8(255.*img_preprocess))
 
     print("Finish u-segment3D Package Step 1 Preprocessing successfully")
 

@@ -3,7 +3,7 @@ function icon_ButtonDownFcn(hObject, eventdata)
 % in all GUIs.
 %
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -183,7 +183,7 @@ switch(className)
     case 'TransformationProcess'
         url = 'https://github.com/DanuserLab/u-probe/wiki/Transformation-Process-Description';
     case 'BleedthroughCorrectionProcess'
-        url = 'https://github.com/DanuserLab/u-probe/wiki/Bleedthrough-Crosstalk-Correction-Process-Description';
+        url = 'https://github.com/DanuserLab/u-probe/wiki/Bleedthrough-Correction-Process-Description';
     case 'RatioProcess'
         url = 'https://github.com/DanuserLab/u-probe/wiki/Ratioing-Process-Description';
     case 'PhotobleachCorrectionProcess'

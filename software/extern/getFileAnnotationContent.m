@@ -16,7 +16,7 @@ function getFileAnnotationContent(session, fileAnnotation, path)
 %
 % See also: GETFILEANNOTATIONS
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

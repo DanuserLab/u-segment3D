@@ -13,7 +13,7 @@ function [ deltaT ] = getDeltaT( bfReader, c, t, z)
 %
 % Mark Kittisopikul, May 2017
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

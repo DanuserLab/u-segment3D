@@ -39,7 +39,7 @@ function mainFig = movieViewer(MO,varargin)
 %
 % Sebastien Besson, July 2012 (last modified Nov 2012)
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -579,20 +579,31 @@ for i=intersect(procId,validProcId)
     set(h,'Value',1);
 end
 
-% if procId was assigned and PointSourceDetectionProcess3DDynROI or TrackingDynROIProcess was selected on Overlay panel,
-% then selected radiobutton on Image panel should be changed from Raw image to BuildDynROIProcess.
+%% If procId was assigned to a process on the Overlay panel, by default selected radiobutton on Image panel is Raw image.
+% Below is to set the selected radiobutton on Image panel from Raw image to another process, for some special processes.
+% Also see local function setRadioButtonForSpecialProcess and getDrawableOutput for outputNum.
+% Added by Qiongjing (Jenny) Zou, Oct 2019 and Oct 2024
 if ~isempty(i) && ~isempty(h) && isequal(h.Style, 'checkbox') && isequal(imagePanel.SelectedObject.String, ' Raw image')
     switch class(validProc{i})
         case {'PointSourceDetectionProcess3DDynROI', 'TrackingDynROIProcess'}
-            BuildDynROIProcId = validProcId(cellfun(@(x) isa(x, 'BuildDynROIProcess'),validProc));
-            if ~isempty(BuildDynROIProcId)
-                h2 = findobj(mainFig,'-regexp','Tag',['radiobutton_process' num2str(BuildDynROIProcId)  '_output2.*']);
-                set(h2,'Value',1);
-            else
-                set(h,'Value',0);
+            % For u-track3D (MD.packages_ can be empty), if procId was assigned to PointSourceDetectionProcess3DDynROI or TrackingDynROIProcess on Overlay panel,
+            % then change selected radiobutton on Image panel to BuildDynROIProcess (output 2)
+            setRadioButtonForSpecialProcess(validProcId, 'BuildDynROIProcess', validProc, mainFig, h, 2);
+
+        case {'ThresholdProcess', 'MultiScaleAutoSegmentationProcess', 'ExternalSegmentationProcess', ...
+                'BackgroundMasksProcess', 'MaskRefinementProcess', 'MaskIntersectionProcess', ...
+                'TremblingCorrectionProcess', 'ProtrusionProcess', 'WindowingProcess'}
+            % For BiosensorsPackage (u-probe) (MD.packages_ can be empty), if step 3 CropShadeCorrectROIProcess is done,
+            % and procId was assigned to step 4-6 and MaskIntersectionProcess on Overlay panel,
+            % then change selected radiobutton on Image panel to CropShadeCorrectROIProcess (output 1)
+            % Same thing for WindowingPackage (u-register), if CropShadeCorrectROIProcess in u-probe is done, and step 2-6
+            % should display overlay on CropShadeCorrectROIProcess.
+            if any(cellfun(@(x) isa(x, 'CropShadeCorrectROIProcess'), validProc{i}.processTree_))
+                setRadioButtonForSpecialProcess(validProcId, 'CropShadeCorrectROIProcess', validProc, mainFig, h, 1);
             end
     end
 end
+%%
 
 % Clear cache when initializing movieViewer
 cached.load('-clear');
@@ -1590,3 +1601,14 @@ function out = isBuildDynROIProcessSelected(imageTag, userData)
         end
     end
     out = userData;
+
+function setRadioButtonForSpecialProcess(validProcId, SpecProcessClass, validProc, mainFig, h, outputNum)
+    % Find process ID for the given special process class
+    SpecProcId = validProcId(cellfun(@(x) isa(x, SpecProcessClass), validProc));
+    if ~isempty(SpecProcId)
+        % Find and select the appropriate radiobutton
+        h2 = findobj(mainFig, '-regexp', 'Tag', ['radiobutton_process' num2str(SpecProcId) '_output' num2str(outputNum) '.*']);
+        set(h2, 'Value', 1);
+    else
+        set(h, 'Value', 0);
+    end

@@ -2,7 +2,7 @@ function deleteChannel_Callback(hObject, eventdata, handles)
 % Generic callback to be exectuted when a selected channel is removed from
 % the graphical settings interface
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

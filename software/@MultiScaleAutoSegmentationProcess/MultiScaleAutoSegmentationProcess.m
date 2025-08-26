@@ -3,7 +3,7 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
     % Segment a single cell image by combining segmentations.
     % see multiScaleAutoSeg_multiObject.m
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -88,8 +88,10 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
 
             %% extra parameters not on GUI:
             funParams.imagesOut = 1;
-            funParams.figVisible = 'on';
+            funParams.figVisible = 'off'; % Changed default from 'on' to 'off'. - Qiongjing (Jenny) Zou, Nov 2024
             funParams.MinimumSize = 10; % unit is pixel
+
+            funParams.verbose = 'off'; % Added to turn off verbose, default is 'off'. - Qiongjing (Jenny) Zou, Jan 2025
 
 
 

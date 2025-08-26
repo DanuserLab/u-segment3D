@@ -17,7 +17,7 @@ function [I,idx] = bfGetPlaneAtZCT( r, z, c, t, varargin )
 %
 % See also: BFGETREADER, BFGETPLANE, loci.formats.IFormatReader.getIndex
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

@@ -27,7 +27,7 @@ function fa = writeFileAnnotation(session, filePath, varargin)
 % WRITELONGANNOTATION, WRITETAGANNOTATION, WRITETEXTANNOTATION,
 % WRITETIMESTAMPANNOTATION, WRITEXMLANNOTATION, UPDATEORIGINALFILE
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

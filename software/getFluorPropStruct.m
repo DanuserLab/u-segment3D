@@ -1,7 +1,7 @@
 % Values from http://www.olympusfluoview.com/applications/fpcolorpalette.html
 % Alexa Fluors: http://www.invitrogen.com/site/us/en/home/References/Molecular-Probes-The-Handbook/Technical-Notes-and-Product-Highlights/The-Alexa-Fluor-Dye-Series.html
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

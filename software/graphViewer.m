@@ -23,7 +23,7 @@ function graphFig = graphViewer(mainFig, graphProc, graphProcId, checkedId)
 %
 % Sebastien Besson, Nov 2012
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

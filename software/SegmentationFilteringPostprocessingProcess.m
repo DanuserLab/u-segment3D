@@ -5,7 +5,7 @@ classdef  SegmentationFilteringPostprocessingProcess < ImageProcessingProcess & 
     %
     % Qiongjing (Jenny) Zou, June 2024
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -82,6 +82,7 @@ classdef  SegmentationFilteringPostprocessingProcess < ImageProcessingProcess & 
             % Below parameters are created base on 
             % /python-applications/Segment3D/segment3D/parameters.py 
             funParams.size_filters.min_size = 200;
+            funParams.size_filters.max_size = string(missing); % This is the equivalent to Python None in MATLAB. % New param added 2025-6-9.
             funParams.size_filters.max_size_factor = 10;
             funParams.size_filters.do_stats_filter = true;
 

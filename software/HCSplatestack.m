@@ -12,7 +12,7 @@ end
 %file_lists = dir(fullfile(dirurl, '*.TIF')); ct = 0;
 %[starti, startsw] = getindexstart(file_lists(1).name);
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

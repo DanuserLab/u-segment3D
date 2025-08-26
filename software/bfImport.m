@@ -29,7 +29,7 @@ function MD = bfImport(dataPath,varargin)
 %   MD - A single MovieData object or an array of MovieData objects
 %   depending on the number of series in the original images.
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

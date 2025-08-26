@@ -20,7 +20,7 @@ function [ tf ] = all_insequence( s, start, stop , interval)
 %
 % See also ismember, insequence, insequence_and_scalar
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

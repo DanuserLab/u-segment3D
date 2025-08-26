@@ -79,8 +79,19 @@ def segment3D_enhancement_postprocessMD(input_path, output_path, label_diffusion
     
     # Copied 2 lines from Step 2 Cellpose segmentation - Need this, otherwise line 92-94 will fail.
     # this expects a multichannel input image and in the format (M,N,L,channels) i.e. channels last.
-    img_preprocess = img_preprocess[...,None] # we generate an artificial channel
-    
+
+    if len(img_preprocess.shape) == 3: 
+        img_preprocess = img_preprocess[...,None] # we generate an artificial channel
+        is_grayscale = 0
+    else:
+        if len(img_preprocess.shape) == 4:
+            img_preprocess = img_preprocess.transpose(1,2,3,0) # put channels to the end now. 
+            
+            if img_preprocess.shape[-1] == 3:
+                is_grayscale = 1
+            else:
+                is_grayscale = 2
+        
     # load step 4's outputs: 
     segmentation3D_filt = skio.imread(os.path.join(inputFolder, 'uSegment3D_blebs_labels_postprocess_filtering_labels.tif'))
     
@@ -93,44 +104,96 @@ def segment3D_enhancement_postprocessMD(input_path, output_path, label_diffusion
         b) guided filter to recover detail such as subcellular protrusions on the surface of the cell. 
     """
     
-    
     ###### a) label diffusion.
     # get parameters from movieData: - QZ
     label_diffusion_params = label_diffusion_params
 
-    
-    segmentation3D_filt_diffuse = uSegment3D.label_diffuse_3D_cell_segmentation_MP(segmentation3D_filt,
-                                                                                   guide_image = img_preprocess[...,0],
-                                                                                   params=label_diffusion_params)
-    
+    if is_grayscale==0:
+	      segmentation3D_filt_diffuse = uSegment3D.label_diffuse_3D_cell_segmentation_MP(segmentation3D_filt,
+	                                                                                   guide_image = img_preprocess[...,0],
+	                                                                                   params=label_diffusion_params)
+    elif is_grayscale == 1:
+        segmentation3D_filt_diffuse = uSegment3D.label_diffuse_3D_cell_segmentation_MP(segmentation3D_filt,
+	                                                                                   guide_image = img_preprocess[...,1],
+	                                                                                   params=label_diffusion_params)
+    else:
+    	# assume RGB and we use the cytoplasmic channel. [in future, we should allow user specification, or just to uplooad a separate.]
+    	  segmentation3D_filt_diffuse = uSegment3D.label_diffuse_3D_cell_segmentation_MP(segmentation3D_filt,
+	                                                                                   guide_image = img_preprocess[...,0],
+	                                                                                   params=label_diffusion_params)
     
     # =============================================================================
     #     Save Output - part 1:
     # =============================================================================
     
-    plt.figure(figsize=(10,10))
-    plt.subplot(131)
-    plt.title('Mid Slices Segmentation Overlay (Post label diffusion)')
-    plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[img_preprocess.shape[0]//2], 
-                                                          img_preprocess[img_preprocess.shape[0]//2], 
-                                                          img_preprocess[img_preprocess.shape[0]//2]]),
-                                              segmentation3D_filt_diffuse[img_preprocess.shape[0]//2], 
-                                              color=(0,1,0), mode='thick'))
-    plt.subplot(132)
-    plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[:,img_preprocess.shape[1]//2], 
-                                                          img_preprocess[:,img_preprocess.shape[1]//2], 
-                                                          img_preprocess[:,img_preprocess.shape[1]//2]]),
-                                              segmentation3D_filt_diffuse[:,img_preprocess.shape[1]//2], 
-                                              color=(0,1,0), mode='thick'))
-    plt.subplot(133)
-    plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[:,:,img_preprocess.shape[2]//2], 
-                                                          img_preprocess[:,:,img_preprocess.shape[2]//2], 
-                                                          img_preprocess[:,:,img_preprocess.shape[2]//2]]),
-                                              segmentation3D_filt_diffuse[:,:,img_preprocess.shape[2]//2], 
-                                              color=(0,1,0), mode='thick'))
-    plt.savefig(os.path.join(saveFolderStep5, 'Mid_Slices_Segmentation_Overlay__Post_label_diffusion.tif'))
-    plt.show(block=False)
-
+    if is_grayscale==0:
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Mid Slices Segmentation Overlay (Post label diffusion)')
+        plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[...,0][img_preprocess.shape[0]//2], 
+                                                              img_preprocess[...,0][img_preprocess.shape[0]//2], 
+                                                              img_preprocess[...,0][img_preprocess.shape[0]//2]]),
+                                                  segmentation3D_filt_diffuse[img_preprocess.shape[0]//2], 
+                                                  color=(0,1,0), mode='thick'))
+        plt.subplot(132)
+        plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[...,0][:,img_preprocess.shape[1]//2], 
+                                                              img_preprocess[...,0][:,img_preprocess.shape[1]//2], 
+                                                              img_preprocess[...,0][:,img_preprocess.shape[1]//2]]),
+                                                  segmentation3D_filt_diffuse[:,img_preprocess.shape[1]//2], 
+                                                  color=(0,1,0), mode='thick'))
+        plt.subplot(133)
+        plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[...,0][:,:,img_preprocess.shape[2]//2], 
+                                                              img_preprocess[...,0][:,:,img_preprocess.shape[2]//2], 
+                                                              img_preprocess[...,0][:,:,img_preprocess.shape[2]//2]]),
+                                                  segmentation3D_filt_diffuse[:,:,img_preprocess.shape[2]//2], 
+                                                  color=(0,1,0), mode='thick'))
+        plt.savefig(os.path.join(saveFolderStep5, 'segmentation_label-diffuse_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+        
+    elif is_grayscale==1:
+        
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Mid Slices Segmentation Overlay (Post label diffusion)')
+        plt.imshow(sksegmentation.mark_boundaries(img_preprocess[img_preprocess.shape[0]//2]/(img_preprocess.max()), 
+                                                  segmentation3D_filt_diffuse[img_preprocess.shape[0]//2], 
+                                                  color=(1,1,1), mode='thick'))
+        plt.subplot(132)
+        plt.imshow(sksegmentation.mark_boundaries(img_preprocess[:,img_preprocess.shape[1]//2]/(img_preprocess.max()),
+                                                  segmentation3D_filt_diffuse[:,img_preprocess.shape[1]//2], 
+                                                  color=(1,1,1), mode='thick'))
+        plt.subplot(133)
+        plt.imshow(sksegmentation.mark_boundaries(img_preprocess[:,:,img_preprocess.shape[2]//2]/(img_preprocess.max()),
+                                                  segmentation3D_filt_diffuse[:,:,img_preprocess.shape[2]//2], 
+                                                  color=(1,1,1), mode='thick'))
+        plt.savefig(os.path.join(saveFolderStep5, 'segmentation_label-diffuse_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+    
+    else:
+        plt.figure(figsize=(10,10))
+        plt.subplot(131)
+        plt.title('Mid Slices Segmentation Overlay (Post label diffusion)')
+        plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[...,0][img_preprocess.shape[0]//2], 
+                                                              img_preprocess[...,0][img_preprocess.shape[0]//2], 
+                                                              img_preprocess[...,0][img_preprocess.shape[0]//2]]),
+                                                  segmentation3D_filt_diffuse[img_preprocess.shape[0]//2], 
+                                                  color=(0,1,0), mode='thick'))
+        plt.subplot(132)
+        plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[...,0][:,img_preprocess.shape[1]//2], 
+                                                              img_preprocess[...,0][:,img_preprocess.shape[1]//2], 
+                                                              img_preprocess[...,0][:,img_preprocess.shape[1]//2]]),
+                                                  segmentation3D_filt_diffuse[:,img_preprocess.shape[1]//2], 
+                                                  color=(0,1,0), mode='thick'))
+        plt.subplot(133)
+        plt.imshow(sksegmentation.mark_boundaries(np.dstack([img_preprocess[...,0][:,:,img_preprocess.shape[2]//2], 
+                                                              img_preprocess[...,0][:,:,img_preprocess.shape[2]//2], 
+                                                              img_preprocess[...,0][:,:,img_preprocess.shape[2]//2]]),
+                                                  segmentation3D_filt_diffuse[:,:,img_preprocess.shape[2]//2], 
+                                                  color=(0,1,0), mode='thick'))
+        plt.savefig(os.path.join(saveFolderStep5, 'segmentation_label-diffuse_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')
+        plt.show(block=False)
+    
+    plt.close('all')
     
     # save this segmentation
     uSegment3D_fio.save_segmentation(os.path.join(saveFolderStep5,
@@ -145,21 +208,59 @@ def segment3D_enhancement_postprocessMD(input_path, output_path, label_diffusion
     
     """
     resize segmentation and preprocessed image back to original sizes.
+
+    try first using cupy, if not try pytorch which will either use cuda or cpu.
     """
+    if is_grayscale==0:
+      try:
+        # for image we use linear interpolation i.e. order=1
+        guide_image = uSegment3D_gpu.dask_cuda_rescale(img_preprocess[...,0],
+                                                       zoom=[1./preprocess_params['factor'],1./preprocess_params['factor'],1./preprocess_params['factor']],
+                                                       order=1,
+                                                       mode='reflect',
+                                                       chunksize=(512,512,512)) # note the inversion of the original factor
+      except:
+        guide_image = uSegment3D_gpu.zoom_3d_pytorch(img_preprocess[...,0],
+                                                       zoom_factors = [1./preprocess_params['factor'],1./preprocess_params['factor'],1./preprocess_params['factor']]) # note the inversion of the original factor
     
-    # for image we use linear interpolation i.e. order=1
-    guide_image = uSegment3D_gpu.dask_cuda_rescale(img_preprocess[...,0],
-                                                   zoom=[1./preprocess_params['factor'],1./preprocess_params['factor'],1./preprocess_params['factor']],
-                                                   order=1,
-                                                   mode='reflect',
-                                                   chunksize=(512,512,512)) # note the inversion of the original factor
+    elif is_grayscale==1:
+      try:
+        # for image we use linear interpolation i.e. order=1
+        guide_image = uSegment3D_gpu.dask_cuda_rescale(img_preprocess[...,1], # RGB, assume cytoplasmic channel. 
+                                                       zoom=[1./preprocess_params['factor'],1./preprocess_params['factor'],1./preprocess_params['factor']],
+                                                       order=1,
+                                                       mode='reflect',
+                                                       chunksize=(512,512,512)) # note the inversion of the original factor
+      except:
+        guide_image = uSegment3D_gpu.zoom_3d_pytorch(img_preprocess[...,1],
+                                                       zoom_factors = [1./preprocess_params['factor'],1./preprocess_params['factor'],1./preprocess_params['factor']]) # note the inversion of the original factor
+      
+    else:
+      try:
+        # for image we use linear interpolation i.e. order=1
+        guide_image = uSegment3D_gpu.dask_cuda_rescale(img_preprocess[...,0], # multichannel, use the first.
+                                                       zoom=[1./preprocess_params['factor'],1./preprocess_params['factor'],1./preprocess_params['factor']],
+                                                       order=1,
+                                                       mode='reflect',
+                                                       chunksize=(512,512,512)) # note the inversion of the original factor
+      except:
+        guide_image = uSegment3D_gpu.zoom_3d_pytorch(img_preprocess[...,0],
+                                                       zoom_factors = [1./preprocess_params['factor'],1./preprocess_params['factor'],1./preprocess_params['factor']]) # note the inversion of the original factor
     
+
+    
+    try:
     # for segmentation we use 0th order i.e. order=0 nearest-neighbor interpolation to maintain integer-values
-    segmentation3D_filt_diffuse = uSegment3D_gpu.dask_cuda_rescale(segmentation3D_filt_diffuse,
+        segmentation3D_filt_diffuse = uSegment3D_gpu.dask_cuda_rescale(segmentation3D_filt_diffuse,
                                                                    zoom=[1./preprocess_params['factor'],1./preprocess_params['factor'],1./preprocess_params['factor']],
                                                                    order=0,
                                                                    mode='reflect',
                                                                    chunksize=(512,512,512)).astype(np.int32) # note the inversion of the original factor
+    except:
+        # for segmentation we use 0th order i.e. order=0 nearest-neighbor interpolation to maintain integer-values
+        segmentation3D_filt_diffuse = uSegment3D_gpu.zoom_3d_pytorch(segmentation3D_filt_diffuse,
+                                                                     zoom_factors = [1./preprocess_params['factor'],1./preprocess_params['factor'],1./preprocess_params['factor']],
+                                                                     interp_mode='nearest').astype(np.int32) # note the inversion of the original factor    
 
     segmentation3D_filt_guide, guide_image_used = uSegment3D.guided_filter_3D_cell_segmentation_MP(segmentation3D_filt_diffuse,
                                                                                                 #guide_image = img_preprocess[...,0],
@@ -169,7 +270,8 @@ def segment3D_enhancement_postprocessMD(input_path, output_path, label_diffusion
     # =============================================================================
     #     Save Output - part 2:
     # =============================================================================
-     
+    
+    # this is unaffected by channels etc, because this is currently on the guide image which by design must be grayscale. 
     plt.figure(figsize=(10,10))
     plt.subplot(131)
     plt.title('Mid Slices Segmentation Overlay (Post guided filter)')
@@ -190,13 +292,13 @@ def segment3D_enhancement_postprocessMD(input_path, output_path, label_diffusion
                                                          guide_image[:,:,guide_image.shape[2]//2]]),
                                               segmentation3D_filt_guide[:,:,guide_image.shape[2]//2], 
                                               color=(0,1,0), mode='thick'))
-    plt.savefig(os.path.join(saveFolderStep5, 'Mid_Slices_Segmentation_Overlay__Post_guided_filter.tif'))    
+    plt.savefig(os.path.join(saveFolderStep5, 'segmentation_guide-filter_overlay_image_midslices-projection.png'), dpi=300, bbox_inches='tight')   
     plt.show(block=False)
+
         
     # save this final segmentation
     uSegment3D_fio.save_segmentation(os.path.join(saveFolderStep5,
                                                   'uSegment3D_blebs_labels_postprocess-diffuse-guided_filter.tif'), segmentation3D_filt_guide)
-    
     
     plt.close('all')
 

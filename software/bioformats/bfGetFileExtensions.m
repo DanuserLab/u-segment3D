@@ -12,7 +12,7 @@ function fileExt = bfGetFileExtensions
 %      format.
 %      This cell array is formatted to be used with uigetfile funciton.
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

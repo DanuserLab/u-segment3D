@@ -22,7 +22,7 @@ function MD = getOmeroMovies(session, imageIDs, varargin)
 %
 % Sebastien Besson, Nov 2012 (last modified Mar 2013)
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

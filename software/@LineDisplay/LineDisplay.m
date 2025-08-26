@@ -2,7 +2,7 @@ classdef LineDisplay < MovieDataDisplay
     % Concrete display class for displaying points or lines
     % Input data must be expressed in xy coordinate system
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

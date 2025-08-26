@@ -42,7 +42,7 @@ import segment3D.parameters as uSegment3D_params # this is useful to call defaul
 # import segment3D.gpu as uSegment3D_gpu
 import segment3D.usegment3d as uSegment3D
 # import segment3D.filters as uSegment3D_filters 
-# import segment3D.file_io as uSegment3D_fio
+import segment3D.file_io as uSegment3D_fio
 
 def segment3D_cellpose_segmentMD(input_path, output_path, params):
     #########################################
@@ -67,7 +67,8 @@ def segment3D_cellpose_segmentMD(input_path, output_path, params):
     # =============================================================================
 
     img_preprocess = skio.imread(os.path.join(inputFile, 'preprocessed.tif'))
-
+    print(img_preprocess.shape)
+    
     # =============================================================================
     #     2. Run Cellpose 2D in xy, xz, yz with auto-tuning diameter to get cell probability and gradients, in all 3 views. 
     # =============================================================================
@@ -86,36 +87,53 @@ def segment3D_cellpose_segmentMD(input_path, output_path, params):
 
 
     # this expects a multichannel input image and in the format (M,N,L,channels) i.e. channels last.
-    img_preprocess = img_preprocess[...,None] # we generate an artificial channel
-
+    if len(img_preprocess.shape) == 3: # 3D volume
+        img_preprocess = img_preprocess[None,...] # we generate an artificial channel
+    if len(img_preprocess.shape) == 4:
+        img_preprocess = img_preprocess.transpose(1,2,3,0) # put channels to the end now. 
+    
+    
     # =============================================================================
     #     Run and Save Output:
     # =============================================================================
-
+    print('input image to segmentation: ', img_preprocess.shape)
+    
     # QZ: changed basename and savefolder from None, so the output can be saved.
 
     basename_xy = 'xy'
     basename_xz = 'xz'
     basename_yz = 'yz'
 
-
+    
     #### 1. running for xy orientation. If the savefolder and basename are specified, the output will be saved as .pkl and .mat files 
+    savefolderplots_xy = os.path.join(saveFolderStep2, 'cellpose_'+basename_xy)
+    uSegment3D_fio.mkdir(savefolderplots_xy)
+    cellpose_segment_params['saveplotsfolder'] = savefolderplots_xy
+
     img_segment_2D_xy_diams, img_segment_3D_xy_probs, img_segment_2D_xy_flows, img_segment_2D_xy_styles = uSegment3D.Cellpose2D_model_auto(img_preprocess, 
                                                                                                                                            view='xy', 
                                                                                                                                            params=cellpose_segment_params, 
-                                                                                                                                           basename=basename_xy, savefolder=saveFolderStep2)
+                                                                                                                                           basename=basename_xy, savefolder=savefolderplots_xy)
 
     #### 2. running for xz orientation 
+    savefolderplots_xz = os.path.join(saveFolderStep2, 'cellpose_'+basename_xz)
+    uSegment3D_fio.mkdir(savefolderplots_xz)
+    cellpose_segment_params['saveplotsfolder'] = savefolderplots_xz
+    
     img_segment_2D_xz_diams, img_segment_3D_xz_probs, img_segment_2D_xz_flows, img_segment_2D_xz_styles = uSegment3D.Cellpose2D_model_auto(img_preprocess, 
                                                                                                                                            view='xz', 
                                                                                                                                            params=cellpose_segment_params, 
-                                                                                                                                           basename=basename_xz, savefolder=saveFolderStep2)
+                                                                                                                                           basename=basename_xz, savefolder=savefolderplots_xz)
 
     #### 3. running for yz orientation 
+    savefolderplots_yz = os.path.join(saveFolderStep2, 'cellpose_'+basename_yz)
+    uSegment3D_fio.mkdir(savefolderplots_yz)
+    cellpose_segment_params['saveplotsfolder'] = savefolderplots_yz
+    
     img_segment_2D_yz_diams, img_segment_3D_yz_probs, img_segment_2D_yz_flows, img_segment_2D_yz_styles = uSegment3D.Cellpose2D_model_auto(img_preprocess, 
                                                                                                                                            view='yz', 
                                                                                                                                            params=cellpose_segment_params, 
-                                                                                                                                           basename=basename_yz, savefolder=saveFolderStep2)
+                                                                                                                                           basename=basename_yz, savefolder=savefolderplots_yz)
     print("Finish u-segment3D Package Step 2 Cellpose Segmentation successfully")    
 
     return []

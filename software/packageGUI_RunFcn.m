@@ -4,7 +4,7 @@ function packageGUI_RunFcn(hObject,eventdata,handles)
 % This is a common section of code called by pushbutton_run_Callback
 % when user click the "Run" button on package control panels.
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -47,9 +47,12 @@ elseif isempty(userData.MD) && ~isempty(userData.ImD)
 else
     field = 'ML'; 
 end
-if isa(userData.crtPackage, 'XcorrFluctuationPackage')
+
+% Solved multiple MovieLists not working problem on packageGUI for ML input packages: - 2019 & 2024
+if any(cellfun(@(MLpackList) isa(userData.crtPackage, MLpackList), inputMLPackageList()))
     field = 'ML';
 end
+
 nMovies = length(userData.(field)); % number of movies
 if get(handles.checkbox_runall, 'Value')
     movieList = circshift(1:nMovies,[0 -(userData.id-1)]);

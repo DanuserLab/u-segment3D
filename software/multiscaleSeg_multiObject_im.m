@@ -1,4 +1,4 @@
-function [finalMask, voteScoreImg] = multiscaleSeg_multiObject_im(im, varargin)
+function [finalMask, voteScoreImg, voteScoreMat] = multiscaleSeg_multiObject_im(im, varargin)
 % multiscaleSeg_singleObject_im Segment a single cell image by combining segmentation
 % results obtained at multiple smoothing scales. Since it requires only one
 % tuning parameters (tightness) and ‘tightness’=0.5 works well for many cases, 
@@ -11,12 +11,18 @@ function [finalMask, voteScoreImg] = multiscaleSeg_multiObject_im(im, varargin)
 %       rmask = multiscaleSeg_multiObject_im(im, 'tightness', 0.5);
 %
 % Updates:
+% 2024/11. J Noh. 
+%   Revise for efficiency. The algorithm now saves the voting
+%   score array output, so that if it is run again only with a different
+%   threshold, it now doesn't run multi-scale segmentations redundantly but
+%   it generates new masks for the different threshold directly from the
+%   previously saved voting score array.
 % 2018/04/20, Jungsik Noh. Modified from multiscaleSeg_im(). Options are
 % simplified.
 % 2017/05/29, Jungsik Noh
 % Updated Andrew R. Jamieson - Sept. 2017
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -42,6 +48,7 @@ ip.addParameter('numVotes', -1);
 ip.addParameter('finalRefinementRadius', 1);
 ip.addParameter('MinimumSize', 10);
 ip.addParameter('ObjectNumber', 1000);
+ip.addParameter('verbose', 'off');
 
 ip.parse(im, varargin{:});
 p = ip.Results;
@@ -135,7 +142,9 @@ end
 res_0 = mean(maskingResultArr(:,:,1:end), 3, 'omitnan');
 res = round(res_0 .* numModels);
 tab = tabulate(res(:));
-tabulate(res(:));
+if isequal(p.verbose, 'on')
+    tabulate(res(:)); % use verbose param to turn off - QZ
+end
 
 val = tab(:,1);
 counts = tab(:,2);
@@ -147,6 +156,8 @@ b = val(ind(2));
 backgroundth = min(a, b);
 maskth = max(a, b);
 
+%
+voteScoreMat = res;
 
 %% ensemble method
 if (p.numVotes < 0)
@@ -162,13 +173,17 @@ if (p.numVotes < 0)
         numVotes = tightnessNumModel;
 
         res0 = (res >= numVotes);
+        if isequal(p.verbose, 'on')
         disp('Threshold of votes: mask = (Value >= threshold)'); 
         disp([num2str(numVotes), ' (tightness: ', num2str(p.tightness), ')'])
+        end
 
 else
         res0 = (res >= p.numVotes);
+        if isequal(p.verbose, 'on')
         disp('Threshold of votes: mask = (Value >= threshold)'); 
         disp(num2str(p.numVotes))
+        end
 end
 
 %% final refinement

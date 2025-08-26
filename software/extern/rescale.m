@@ -21,7 +21,7 @@ function [B, lims] = rescale(A, lims, out_lims)
 %   lims - 1x2 array of saturation limits used on A. Equal to the input
 %          lims, if given.
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

@@ -17,7 +17,7 @@
 % Note: there is a bug in '-depsc2' as of Matlab2010b, which misprints patches.
 %       When printing, use 'depsc' instead.
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

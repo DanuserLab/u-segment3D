@@ -12,7 +12,7 @@ function status = isSubclass(classname,parentname)
 %   status - boolean. Return true if class is a child of parent. False
 %   otherwise
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

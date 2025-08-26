@@ -20,7 +20,7 @@ function varargout = SegmentationFilteringPostprocessingProcessGUI(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -77,6 +77,7 @@ funParams = userData.crtProc.funParams_;
 
 % For funParams.size_filters.xxx, tag names pattern as type_sf_parameterName, e.g. edit_sf_min_size
 set(handles.edit_sf_min_size, 'String',num2str(funParams.size_filters.min_size))
+set(handles.edit_sf_max_size, 'String',num2str(funParams.size_filters.max_size))
 set(handles.edit_sf_max_size_factor, 'String',num2str(funParams.size_filters.max_size_factor))
 if funParams.size_filters.do_stats_filter
     set(handles.checkbox_sf_do_stats_filter, 'Value', 1)
@@ -204,6 +205,13 @@ if isnan(str2double(get(handles.edit_sf_min_size, 'String'))) ...
     return;
 end
 
+  % The Largest Allowable Cell Size [voxels] (default is empty) can be empty (None, string(missing) in Matlab) or int >0
+if ~isempty(get(handles.edit_sf_max_size, 'String')) && (str2double(get(handles.edit_sf_max_size, 'String')) <= 0 ...
+        || floor(str2double(get(handles.edit_sf_max_size, 'String'))) ~= str2double(get(handles.edit_sf_max_size, 'String')))
+    errordlg('Please provide a valid input for ''The Largest Allowable Cell Size [voxels] (default is empty)''.','Setting Error','modal');
+    return;
+end
+
   % Multiplier for Setting Maximum Cell Size is float >0
 if isnan(str2double(get(handles.edit_sf_max_size_factor, 'String'))) ...
         || str2double(get(handles.edit_sf_max_size_factor, 'String')) <= 0
@@ -278,6 +286,14 @@ funParams.ChannelIndex = channelIndex;
 
 % For funParams.size_filters.xxx:
 funParams.size_filters.min_size = int16(str2double(get(handles.edit_sf_min_size, 'String'))); % this parameter need to be a integer!
+
+% this can be empty (None, string(missing) in Matlab) or integer:
+if isempty(get(handles.edit_sf_max_size, 'String'))
+  funParams.size_filters.max_size = string(missing);
+else
+  funParams.size_filters.max_size = int16(str2double(get(handles.edit_sf_max_size, 'String'))); % this parameter need to be a integer!
+end
+
 funParams.size_filters.max_size_factor = str2double(get(handles.edit_sf_max_size_factor, 'String'));
 if get(handles.checkbox_sf_do_stats_filter, 'Value')
     funParams.size_filters.do_stats_filter = true;

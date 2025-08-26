@@ -14,7 +14,7 @@ function [ handler ] = addMovieViewerKeyboardShortcuts( varargin )
 % Number keys - Toggle respective channel
 % Control with the arrow keys increases the increment from 1 to 5
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

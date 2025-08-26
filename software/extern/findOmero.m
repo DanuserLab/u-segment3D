@@ -1,7 +1,7 @@
 function s=findOmero()
 % Return the path of the OMERO.matlab toolbox
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

@@ -52,7 +52,7 @@ function [paramOut,unrecParam] = parseProcessParams(procOb,paramIn,asCell)
 % If the parameter wasn't input, copy the default from the process.
 % Also consider a field of funParams is also a 1 by n structure (n>=1).
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

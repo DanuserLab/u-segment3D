@@ -48,7 +48,7 @@ function [result] = bfopen(id, varargin)
 % For many examples of how to use the bfopen function, please see:
 %     https://docs.openmicroscopy.org/latest/bio-formats/developers/matlab-dev.html
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 

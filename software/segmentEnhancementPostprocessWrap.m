@@ -20,7 +20,7 @@ function segmentEnhancementPostprocessWrap(movieDataOrProcess, varargin)
 %
 % Qiongjing (Jenny) Zou, June 2024
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
@@ -77,6 +77,13 @@ elseif isa(movieData.processes_{p.ProcessIndex},'SegmentationFilteringPostproces
     iSegFilterPostProc = p.ProcessIndex;
 else
     error('The process specified by ProcessIndex is not a valid SegmentationFilteringPostprocessingProcess! Check input!')
+end
+
+% checking if GPU available, if not, give warning. This process needs GPU!
+if gpuDeviceCount("available") < 1
+    fprintf(2, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
+    warning('No GPU found! When GPU not found or insufficient GPU memory available, this process will fall back to CPU execution.')
+    fprintf(2, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n');
 end
 
 % logging input paths (bookkeeping)

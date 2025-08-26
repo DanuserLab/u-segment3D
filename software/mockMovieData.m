@@ -2,7 +2,7 @@ function MDK = mockMovieData(MD, idx)
 % idx is the absolute idex already transformed from [col# row# site#],
 % passed from value tni in movieViewer.viewsite
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of uSegment3D_Package.
 % 
