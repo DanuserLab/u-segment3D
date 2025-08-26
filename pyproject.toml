@@ -27,20 +27,24 @@ classifiers = [
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
 ]
 
-
-requires-python = ">=3.9"
+requires-python = ">=3.9, <3.13"
 dependencies = [
+    'numpy<2.0',   
+    'pyarrow<21',
     'cellpose<4.0',
     'cupy-cuda11x; sys_platform!="darwin"',
     'dask[complete]',
     'scikit-image',
     'scikit-learn',
-    'imagecodecs',
+    'imagecodecs<2025',
+    'contourpy<=1.2.0',
     'opencv-python-headless',
     'scipy',
-    'numpy<2.0',
     'numba',
     'matplotlib',
     'seaborn',
@@ -50,7 +54,7 @@ dependencies = [
     'connected-components-3d',
     'edt',
     'tqdm',
-    'scikit-fmm',
+    'scikit-fmm; sys_platform=="win"',
     'czifile'
     ]
 

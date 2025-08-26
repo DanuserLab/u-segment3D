@@ -5,6 +5,14 @@
   <img src="docs/imgs/summary_figure.png" width="1000"/>
 </p>
 
+[![PyPI version](https://badge.fury.io/py/u-Segment3D.svg)](https://badge.fury.io/py/u-Segment3D)
+[![Downloads](https://pepy.tech/badge/u-Segment3D)](https://pepy.tech/project/u-Segment3D)
+[![Downloads](https://pepy.tech/badge/u-Segment3D/month)](https://pepy.tech/project/u-Segment3D)
+[![Python version](https://img.shields.io/pypi/pyversions/u-Segment3D)](https://pypistats.org/packages/u-Segment3D)
+[![GitHub stars](https://img.shields.io/github/stars/DanuserLab/u-segment3D?style=social)](https://github.com/DanuserLab/u-segment3D/)
+[![GitHub forks](https://img.shields.io/github/forks/DanuserLab/u-segment3D?style=social)](https://github.com/DanuserLab/u-segment3D/)
+[![Licence: GPL v3](https://img.shields.io/github/license/DanuserLab/u-segment3D)](https://github.com/DanuserLab/u-segment3D/blob/master/LICENSE)
+
 <!-- TOC start -->
    * [Dependencies](#dependencies)
    * [Installation](#installation)
@@ -49,18 +57,20 @@ u-Segment3D has a number of dependencies detailed in the requirements.txt. GPU d
 
 
 ## Installation
-u-Segment3D can be installed for all three major OS from PyPI. We recommend installing to a new conda environment:
+u-Segment3D can be installed for all three major OS from PyPI. We recommend installing to a new conda environment, and install `scikit-fmm` package from the conda-forge channel:
 ```
 conda create -n u_Segment3D_env python=3.9
+conda install -n u_Segment3D_env -c conda-forge scikit-fmm
 pip install u-Segment3D
 ```
 
-u-Segment3D can also be installed by git cloning the repository and running pip in the cloned folder with python>=3.9. We have developed on Python==3.9 on Red Hat Enterprise Linux Server 7.9. `pyproject.toml` configures the individual dependencies for each OS.
+u-Segment3D can also be installed by git cloning the repository and running pip in the cloned folder with python 3.9-3.12. We have developed on Python==3.9 on Red Hat Enterprise Linux Server 7.9. `pyproject.toml` configures the individual dependencies for each OS.
 
 ### Linux
 We suggest first creating a new conda environment for install and use conda to install cudatoolkit and cudnn first: 
 ```
 conda create -n u_Segment3D_env python=3.9 cudatoolkit=11.8.* cudnn==8.* -c anaconda
+conda install -n u_Segment3D_env -c conda-forge scikit-fmm
 conda activate u_Segment3D_env
 pip install .
 ```
@@ -111,6 +121,7 @@ conda install -n u_Segment3D_env scikit-fmm -c conda-forge
 NVIDIA CUDA is not available for MacOS with Apple Silicon chips. Therefore don't install any of these dependencies.
 ```
 conda create -n u_Segment3D_env python=3.9
+conda install -n u_Segment3D_env -c conda-forge scikit-fmm
 conda activate u_Segment3D_env
 pip install .
 ```
