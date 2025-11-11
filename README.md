@@ -43,7 +43,7 @@ Despite the name, the postprocessing and segmentation functions in u-Segment3D h
 
 The primary motivation in developing u-Segment3D is to take advantage and leverage existing state-of-the-art 2D segmentation models for 3D segmentation without further data training. 
 
-It is associated with the BioArxiv paper, [**Universal consensus 3D segmentation of cells from 2D segmented stacks**](https://www.biorxiv.org/content/10.1101/2024.05.03.592249v3), *bioRxiv*, 2025, written by Felix Y. Zhou, Zach Marin, Clarence Yapp, Qiongjing Zhou, Benjamin A. Nanes, Stephan Daetwyler, Andrew R. Jamieson, Md Torikul Islam, Edward Jenkins, Gabriel M. Gihana, Jinlong Lin, Hazel M.Borges, Bo-Jui Chang, Andrew Weems, Sean J. Morrison, Peter K. Sorger, Reto Fiolka, Kevin Dean, and [Gaudenz Danuser](https://www.danuserlab-utsw.org/).
+It is associated with the BioArxiv paper, [**Universal consensus 3D segmentation of cells from 2D segmented stacks**](https://doi.org/10.1038/s41592-025-02887-w), *Nature Methods*, 2025, written by Felix Y. Zhou, Zach Marin, Clarence Yapp, Qiongjing Zhou, Benjamin A. Nanes, Stephan Daetwyler, Andrew R. Jamieson, Md Torikul Islam, Edward Jenkins, Gabriel M. Gihana, Jinlong Lin, Hazel M.Borges, Bo-Jui Chang, Andrew Weems, Sean J. Morrison, Peter K. Sorger, Reto Fiolka, Kevin Dean, and [Gaudenz Danuser](https://www.danuserlab-utsw.org/).
 
 The current library is still a work-in-progress. It is fully functional but documentation still require work and more tutorials are upcoming. 
 
