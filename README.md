@@ -225,7 +225,7 @@ indirect_aggregation_params['gradient_descent']['gradient_decay'] = 0.25
 ```
 
 ### Example Data
-Please download the zipped folder containing example data from the [link](https://www.dropbox.com/scl/fo/le8rjbrohg9p29kebq25f/ANp7T7Z7bh4GsaphRmp7Qc0?rlkey=prgj9mxlluy8cl7x68ygtrigz&st=x89yerip&dl=0). The following examples assume you have unzipped the data to the `example_data/` directory of this repository, and is running the examples after installation from their current location in the repository. Please adjust filepaths accordingly, if otherwise. 
+Please download the zipped folder containing example data from the [link](https://zenodo.org/records/15692302). The following examples assume you have unzipped the data to the `example_data/` directory of this repository, and is running the examples after installation from their current location in the repository. Please adjust filepaths accordingly, if otherwise. 
 
 ### Example Scripts
 **Examples for 3D Single Cell segmentation with morphological motifs:**
