@@ -758,6 +758,7 @@ def postprocess_3D_cell_segmentation(segmentation,
     from cellpose.utils import fill_holes_and_remove_small_masks
     import scipy.ndimage as ndimage
     import skimage.measure as skmeasure 
+    import gc
     
     
     segmentation_filt = segmentation.copy()
@@ -880,6 +881,8 @@ def postprocess_3D_cell_segmentation(segmentation,
                 gradient_yz = np.concatenate([np.zeros_like(gradient_yz[:,1])[:,None,...], gradient_yz], axis=1)
                 gradient_yz = gradient_yz[:,[1,2,0],...] #.copy() # we must flip the channels!. 
             print('finish yz')
+            
+            del guide
         
         else:
             # do xy
@@ -914,7 +917,10 @@ def postprocess_3D_cell_segmentation(segmentation,
         """
         implement the combination. 
         """
-        del tmp, guide
+        del tmp
+        
+        gc.collect() # Forces garbage collection
+        
             
         dx = usegment3D_filters.var_combine([ndimage.gaussian_filter(gradient_xy[:,2], sigma=aggregation_params['combine_cell_gradients']['smooth_sigma']), 
                                        ndimage.gaussian_filter(gradient_xz[:,2], sigma=aggregation_params['combine_cell_gradients']['smooth_sigma'])],

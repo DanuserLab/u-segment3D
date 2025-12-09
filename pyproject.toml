@@ -52,7 +52,7 @@ dependencies = [
     'multiprocess',
     'tiler',
     'connected-components-3d',
-    'edt',
+    'edt<=3.0.0',
     'tqdm',
     'scikit-fmm; sys_platform=="win"',
     'czifile'
