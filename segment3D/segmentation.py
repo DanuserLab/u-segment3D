@@ -359,15 +359,26 @@ def apply_cellpose_model_2D_prob_slice(im_slice,
 
             img = im_slice.copy()
 
-            _, flow, style = model_eval([img],
-                                        channels=model_channels,
-                                        batch_size=32,
-                                        do_3D=False,
-                                        flow_threshold=0.6,
-                                        cellprob_threshold=-np.inf,
-                                        diameter=diam, # this is ok
-                                        invert=model_invert,
-                                        compute_masks=False) # try inverting?
+            if int(cellpose.version.split('.')[0])<4:
+                _, flow, style = model_eval([img],
+                                            channels=model_channels,
+                                            batch_size=32,
+                                            do_3D=False,
+                                            flow_threshold=0.6,
+                                            cellprob_threshold=-np.inf,
+                                            diameter=diam, # this is ok
+                                            invert=model_invert,
+                                            compute_masks=False) # try inverting?
+            else:
+                _, flow, style = model_eval([img],
+                                            channels=model_channels,
+                                            batch_size=32,
+                                            do_3D=False,
+                                            flow_threshold=0.6,
+                                            cellprob_threshold=-np.inf,
+                                            diameter=diam, # this is ok
+                                            # invert=model_invert, # Cellpose 4 doesn't take invert anymore
+                                            compute_masks=False) # try inverting?
 
             # score the content! e.g. sobel, var,
             # prob_score = np.nanmean(var_filter(flow[0][1][0], ksize=ksize)+var_filter(flow[0][1][1], ksize=ksize))
@@ -424,13 +435,23 @@ def apply_cellpose_model_2D_prob_slice(im_slice,
 
     # print('auto determine cell diameter: ', best_diam)
 
-    _, flow, style = model_eval([img],
-                                batch_size=32,
-                                channels=model_channels,
-                                diameter=best_diam,
-                                # model_loaded=True,
-                                invert=model_invert,
-                                compute_masks=False)
+    if int(cellpose.version.split('.')[0])<4:
+        _, flow, style = model_eval([img],
+                                    batch_size=32,
+                                    channels=model_channels,
+                                    diameter=best_diam,
+                                    # model_loaded=True,
+                                    invert=model_invert,
+                                    compute_masks=False)
+    else:
+        _, flow, style = model_eval([img],
+                                    batch_size=32,
+                                    channels=model_channels,
+                                    diameter=best_diam,
+                                    # model_loaded=True,
+                                    # invert=model_invert, # Cellpose 4 doesn't take invert anymore
+                                    compute_masks=False)
+
 
     # return flow[0][2], flow[0][1], style[0]
     (all_probs, all_flows, all_styles) = (flow[0][2], flow[0][1], style[0])
@@ -546,7 +567,7 @@ def apply_cellpose_model_2D_prob(im_stack, model,
                                                 do_3D=False, 
                                                 flow_threshold=0.6, # this doesn't matter. 
                                                 diameter=None, # this is ok 
-                                                invert=model_invert,
+                                                # invert=model_invert, # Cellpose 4 doesn't take invert anymore
                                                 compute_masks=False)
                                                 # model_loaded=False) 
             
@@ -597,7 +618,7 @@ def apply_cellpose_model_2D_prob(im_stack, model,
                                             do_3D=False, 
                                             flow_threshold=0.6,
                                             diameter=diam, # this is ok 
-                                            invert=model_invert,
+                                            # invert=model_invert, # Cellpose 4 doesn't take invert anymore
                                             compute_masks=False) # try inverting?  
             
                 # score the content! e.g. sobel, var, 
@@ -711,7 +732,7 @@ def apply_cellpose_model_2D_prob(im_stack, model,
                                               # channels=model_channels, 
                                               diameter=best_diam,
                                               # model_loaded=True,
-                                              invert=model_invert,
+                                            #   invert=model_invert, # Cellpose 4 doesn't take invert anymore
                                                compute_masks=False)
         # _, flow, style, _ = model.eval([img],
         #                                batch_size=32,
@@ -838,14 +859,23 @@ def apply_cellpose_model_2D_prob_multiscale(im_stack, model,
                     else:
                         img = _BackgroundRemoval(img)
                     img = skexposure.rescale_intensity(img)
-                
-            _, flow, style = model_eval([img], 
+            if int(cellpose.version.split('.')[0])<4:
+                _, flow, style = model_eval([img], 
                                         channels=model_channels, 
                                         batch_size=32,
                                         do_3D=False, 
                                         flow_threshold=0.6,
                                         diameter=diam, # this is ok 
                                         invert=model_invert,
+                                        compute_masks=False) # try inverting?  
+            else:
+                _, flow, style = model_eval([img], 
+                                        channels=model_channels, 
+                                        batch_size=32,
+                                        do_3D=False, 
+                                        flow_threshold=0.6,
+                                        diameter=diam, # this is ok 
+                                        # invert=model_invert, # Cellpose 4 doesn't take invert anymore
                                         compute_masks=False) # try inverting?  
         
             # score the content! e.g. sobel, var, 
@@ -951,14 +981,25 @@ def apply_cellpose_model_2D_prob_multiscale(im_stack, model,
             # best_diams = []
             
             if include_cellpose_auto_diam:
-                _, _, _, best_cp_diam = model_eval([img], 
-                                                    channels=model_channels, 
-                                                    batch_size=32,
-                                                    do_3D=False, 
-                                                    flow_threshold=0.6,
-                                                    diameter=None, # this is ok 
-                                                    invert=model_invert,
-                                                    compute_masks=False) 
+                if int(cellpose.version.split('.')[0])<4:
+                    _, _, _, best_cp_diam = model_eval([img], 
+                                                        channels=model_channels, 
+                                                        batch_size=32,
+                                                        do_3D=False, 
+                                                        flow_threshold=0.6,
+                                                        diameter=None, # this is ok 
+                                                        invert=model_invert,
+                                                        compute_masks=False) 
+                else:
+                    _, _, _, best_cp_diam = model_eval([img], 
+                                                        channels=model_channels, 
+                                                        batch_size=32,
+                                                        do_3D=False, 
+                                                        flow_threshold=0.6,
+                                                        diameter=None, # this is ok 
+                                                        # invert=model_invert, # Cellpose 4 doesn't take invert anymore
+                                                        compute_masks=False) 
+
                 print(best_cp_diam)
                 best_diams = np.hstack([best_diams, best_cp_diam]) # this is in actual dimension space. 
         else:
@@ -993,14 +1034,23 @@ def apply_cellpose_model_2D_prob_multiscale(im_stack, model,
                 img = _histeq_low_contrast(img, kernel_size=kernel_size, clip_limit=clip_limit, fraction_threshold=fraction_threshold)
                 # img = normalize(img, pmin=2, pmax=99.8, clip=True)
                 img = skexposure.rescale_intensity(img)
-                
-            _, flow, style = model_eval([img],
-                                        batch_size=32,
-                                        channels=model_channels, 
-                                        diameter=best_diam,
-                                        # model_loaded=True,
-                                        invert=model_invert,
-                                        compute_masks=False)
+            
+            if int(cellpose.version.split('.')[0])<4:
+                _, flow, style = model_eval([img],
+                                            batch_size=32,
+                                            channels=model_channels, 
+                                            diameter=best_diam,
+                                            # model_loaded=True,
+                                            invert=model_invert,
+                                            compute_masks=False)
+            else:
+                _, flow, style = model_eval([img],
+                                            batch_size=32,
+                                            channels=model_channels, 
+                                            diameter=best_diam,
+                                            # model_loaded=True,
+                                            # invert=model_invert, # Cellpose 4 doesn't take invert anymore
+                                            compute_masks=False)
             
             # _, flow, style, _ = model.eval([img],
             #                                batch_size=32,
@@ -1036,5 +1086,4 @@ def apply_cellpose_model_2D_prob_multiscale(im_stack, model,
     
 
     return (diam_range, diam_score, best_diams, test_slice), (all_probs_ms, all_flows_ms, all_styles_ms)
-
 
