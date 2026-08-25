@@ -53,7 +53,10 @@ The current library is still a work-in-progress. It is fully functional but docu
 </p>
 
 ## Dependencies
-u-Segment3D has a number of dependencies detailed in the requirements.txt. GPU dependencies are based on installing Cellpose to use as the default 2D segmentation method in u-Segment3D. 
+u-Segment3D has a number of dependencies detailed in `pyproject.toml`. GPU
+dependencies are based on installing Cellpose to use as the default 2D
+segmentation method in u-Segment3D. NVIDIA GPU installations use the CUDA 12
+CuPy package (`cupy-cuda12x`). Install only one CuPy package in an environment.
 
 
 ## Installation
@@ -67,14 +70,22 @@ pip install u-Segment3D
 u-Segment3D can also be installed by git cloning the repository and running pip in the cloned folder with python 3.9-3.12. We have developed on Python==3.9 on Red Hat Enterprise Linux Server 7.9. `pyproject.toml` configures the individual dependencies for each OS.
 
 ### Linux
-We suggest first creating a new conda environment for install and use conda to install cudatoolkit and cudnn first: 
+We suggest first creating a new conda environment for installation. Choose a
+PyTorch build supported by both the installed NVIDIA driver and the target GPU.
+For example, a CUDA 12.6 PyTorch build supports older Pascal GPUs, while newer
+builds can be used for Ampere and Blackwell GPUs:
 ```
-conda create -n u_Segment3D_env python=3.9 cudatoolkit=11.8.* cudnn==8.* -c anaconda
+conda create -n u_Segment3D_env python=3.9
 conda install -n u_Segment3D_env -c conda-forge scikit-fmm
 conda activate u_Segment3D_env
+pip install torch --index-url https://download.pytorch.org/whl/cu126
 pip install .
 ```
-If on a HPC cluster, depending on the way it is setup, you may need to module load the cuda corresponding to the install, `module load cuda118/toolkit/11.8.0` prior to activating the conda environment to use the installed `cupy` library functions for image resizing. Otherwise, u-Segment3D will fall back to a `pytorch` version of image resizing. Don't worry, this still uses gpu, but is slower than using cupy.
+On an HPC cluster, load a CUDA 12 toolkit compatible with the installed driver
+before activating the environment so that CuPy can provide GPU image resizing.
+Blackwell GPUs require CUDA 12.8 or newer for native support. If CuPy cannot use
+CUDA, u-Segment3D falls back to its PyTorch implementation of image resizing;
+this still uses the GPU when PyTorch CUDA is available, but it is slower.
 
 **Errors we have encountered:**
 
@@ -90,8 +101,9 @@ conda install -n u_Segment3D_env pyicu -c conda-forge # tries to install a preco
 
 ### Windows
 ```
-conda create -n u_Segment3D_env python=3.9 cudatoolkit=11.8.* cudnn==8.* -c anaconda
+conda create -n u_Segment3D_env python=3.9
 conda activate u_Segment3D_env
+pip install torch --index-url https://download.pytorch.org/whl/cu126
 pip install .
 ```
 On machine with NVIDIA graphics card, check to see if torch has been correctly installed with GPU by importing the library in Python. 
@@ -99,15 +111,16 @@ On machine with NVIDIA graphics card, check to see if torch has been correctly i
 import torch
 print(torch.cuda.is_available())
 ```
-If `True`, nothing needs to be done, you are set. If `False`, you need to install an earlier version of pytorch compiled for cuda11.8
+If `True`, nothing needs to be done. If `False`, install a PyTorch build that
+matches the supported CUDA version for the target GPU and driver, for example:
 ```
-pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cu118
+pip install torch --index-url https://download.pytorch.org/whl/cu126
 ```
 See https://pytorch.org/get-started/previous-versions/ to check out other pytorch versions.
 
 Alternatively, you may try to install pytorch through anaconda from the conda-forge channel:
 ```
-conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+conda install pytorch torchvision torchaudio pytorch-cuda=12.6 -c pytorch -c nvidia
 ```
 
 **Errors we have encountered:**
