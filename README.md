@@ -29,6 +29,9 @@
    * [Questions and Issues](#questions-and-issues)
    * [Danuser Lab Links](#danuser-lab-links)
 <!-- TOC end -->
+#### Aug 2026
+- updated to CUDA 12 to additonally support NVIDIA Blackwell GPUs (see PR, https://github.com/DanuserLab/u-segment3D/pull/16)
+- updated segmentation API to call Cellpose 4 models without feeding in the depreciated "invert" term (see PR, https://github.com/DanuserLab/u-segment3D/pull/15)
 
 #### June 2025
 - we have updated API to add compatibility with Cellpose4 changes. u-Segment3D should work with cellpose>=4.0.5. If this is not available from pip, you will need to install the github version of cellpose: `pip install git+https://www.github.com/mouseland/cellpose.git`
