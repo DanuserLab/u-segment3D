@@ -37,7 +37,7 @@ dependencies = [
     'numpy<2.0',   
     'pyarrow<21',
     'cellpose<4.0',
-    'cupy-cuda11x; sys_platform!="darwin"',
+    'cupy-cuda12x; sys_platform!="darwin"',
     'dask[complete]',
     'scikit-image',
     'scikit-learn',
@@ -61,4 +61,3 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/DanuserLab/u-segment3D"
 Issues = "https://github.com/DanuserLab/u-segment3D/issues"
-
