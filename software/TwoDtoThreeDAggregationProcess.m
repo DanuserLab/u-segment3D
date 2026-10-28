@@ -112,7 +112,8 @@ classdef  TwoDtoThreeDAggregationProcess < DataProcessingProcess & NonSingularPr
             funParams.combine_cell_probs.smooth_sigma = 0;
             funParams.combine_cell_probs.threshold_level = int16(1); % this parameter need to be a integer!
             funParams.combine_cell_probs.threshold_n_levels = int16(3); % this parameter need to be a integer!
-            funParams.combine_cell_probs.apply_one_d_p_thresh = true;
+            funParams.combine_cell_probs.prob_thresh_offset = -0.05; % added to the automatic (multi-Otsu) threshold
+            funParams.combine_cell_probs.apply_one_d_p_thresh = false; % legacy 1 d.p. floor, superseded by prob_thresh_offset
             funParams.combine_cell_probs.prob_thresh = string(missing); % This is the equivalent to Python None in MATLAB.
             funParams.combine_cell_probs.min_prob_thresh = 0.0;
 
