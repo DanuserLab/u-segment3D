@@ -29,6 +29,20 @@
    * [Questions and Issues](#questions-and-issues)
    * [Danuser Lab Links](#danuser-lab-links)
 <!-- TOC end -->
+
+#### :star2: Note on using Cellpose4 models :star2:
+- setup and install u-Segment3D as below.
+- force reinstall cellpose to upgrade (you will need a CUDA13 compatible card!): `pip install --upgrade --force-reinstall cellpose`
+- refer to the issue (https://github.com/DanuserLab/u-segment3D/issues/13) and gist (https://gist.github.com/fyz11/4fe1af641e6fea214e0ed4b01fe5950f) if wanting to use the direct method or use indirect method with no changes. 
+
+
+#### Oct 2026
+- `do_mp=True` (multiprocess gradient descent) now gives the same segmentation as the default serial path. Previously it thresholded the point density over the foreground only instead of the whole volume.
+- the automatic cell probability threshold is no longer floored to 1 decimal point, which could make it jump by 0.1 between near-identical runs. A new parameter, `combine_cell_probs['prob_thresh_offset']` (default -0.05), is added to the multi-Otsu threshold instead. The old behaviour is still available with `apply_one_d_p_thresh=True` (now `False` by default), and setting `prob_thresh` explicitly still bypasses the automatic threshold. The printed threshold now also shows the raw multi-Otsu value.
+- preprocessing is reproducible: background correction no longer depends on the number of numba threads.
+- the CUDA (cupy) background correction works again instead of silently falling back to torch, and no longer depends on whether torch or cupy is imported first. Each "no CUDA / no gpu" fallback message now prints the error that caused it.
+- note: default results may shift slightly as a result of these fixes.
+
 #### Aug 2026
 - updated to CUDA 12 to additonally support NVIDIA Blackwell GPUs (see PR, https://github.com/DanuserLab/u-segment3D/pull/16)
 - updated segmentation API to call Cellpose 4 models without feeding in the depreciated "invert" term (see PR, https://github.com/DanuserLab/u-segment3D/pull/15)

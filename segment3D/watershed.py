@@ -1103,12 +1103,13 @@ def mp_gradient_watershed3D_binary(binary,
     res[...,1] = np.clip(res[...,1], 0, shape[1]-1)
     res[...,2] = np.clip(res[...,2], 0, shape[2]-1)
 
-    cell_seg_connected_original, cell_seg_connected, votes_grid_acc = connected_components_pts_3D( pts=res[1], 
+    # forward the user mask (same as the serial gradient_watershed3D_binary) so do_mp gives the same threshold.
+    cell_seg_connected_original, cell_seg_connected, votes_grid_acc = connected_components_pts_3D( pts=res[1],
                                                                                                     pts0=res[0], 
                                                                                                     shape=shape, 
                                                                                                     smooth_sigma=smooth_sigma, 
                                                                                                     thresh_factor=thresh_factor, 
-                                                                                                    mask=im_binary,
+                                                                                                    mask=mask,
                                                                                                     min_area=min_area)
 
     return cell_seg_connected_original, cell_seg_connected, res[1], votes_grid_acc

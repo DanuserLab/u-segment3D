@@ -7,7 +7,28 @@ Created on Mon Feb 20 21:37:54 2023
 helper filters. 
 """
 
-import numpy as np 
+import numpy as np
+
+def _load_torch_cuda_libs():
+    """ import torch before using cupy. torch puts its bundled CUDA libraries (e.g. nvrtc) on the DLL search path,
+    so cupy then works the same regardless of whether the user imported cupy or torch first.
+    cupy only loads nvrtc when it first compiles a kernel, so calling this before the first cupy operation is enough.
+    """
+    try:
+        import torch
+    except ImportError:
+        pass
+    return
+
+def _init_cupy():
+    """ load torch's CUDA libraries, then compile a first trivial cupy kernel in the calling (main) thread.
+    cupy initializes its compiler lazily and this is not thread-safe: if the first compile happens concurrently in several
+    dask worker threads it can fail with 'Failed to auto-detect CUDA root directory' (seen when cupy is imported before torch).
+    """
+    _load_torch_cuda_libs()
+    import cupy
+    (cupy.zeros(1, dtype=cupy.float32) + 1).get()
+    return
 
 def zoom_3d_pytorch(image_np, zoom_factors,interp_mode='trilinear', output_size=None):
     """Zooms a 3D image using PyTorch's interpolate function.
@@ -75,6 +96,7 @@ def cuda_rescale(im, zoom, order=1, mode='reflect'):
     """
     cuda rescale
     """        
+    _load_torch_cuda_libs() # make cupy independent of torch/cupy import order
     import cupyx.scipy.ndimage as cupyndimage
     import cupy
     
@@ -85,6 +107,7 @@ def cuda_rescale(im, zoom, order=1, mode='reflect'):
 
 
 def cuda_equalize_adapthist( im, kernel_size=None, clip_limit=0.05,nbins=256):
+    _load_torch_cuda_libs() # make cupy independent of torch/cupy import order
     import cupy 
     import cucim.skimage.exposure as cu_skexposure
     
@@ -98,6 +121,7 @@ def cuda_equalize_adapthist( im, kernel_size=None, clip_limit=0.05,nbins=256):
 # this also seems good. 
 def dask_cuda_rescale(img, zoom, order=1, mode='reflect', chunksize=(512,512,512)):    
     import dask.array as da
+    _init_cupy() # in the main thread, before dask runs cuda_rescale in worker threads
     import numpy as np 
 
     im_chunk = da.from_array(img, chunks=chunksize) # make into chunk -> we can then map operation?  
@@ -140,6 +164,7 @@ def dask_cuda_bg(img, bg_ds=8, bg_sigma=5, chunksize=(512,512,512)):
     """
     import dask.array as da
     import scipy.ndimage as ndimage 
+    _init_cupy() # in the main thread, before dask runs cuda_rescale in worker threads
     # import cucim.skimage.transform as cu_transform # seems to not need this and this seems experimental / temperamental. 
 
     im_chunk = da.from_array(img, chunks=chunksize) # make into chunk -> we can then map operation?  
@@ -167,22 +192,23 @@ def torch_smooth_vol(im, ds=4, sigma=5):
 
 def cuda_smooth_vol( im, ds=4, sigma=5):
     
+    _load_torch_cuda_libs() # make cupy independent of torch/cupy import order
     import cupyx.scipy.ndimage as ndimage
     # import cucim.skimage.transform as cu_transform
-    import numpy as np 
+    import numpy as np
     import cupy
     
-    # out = cu_transform.resize(cupy.array(im), np.array(im.shape)//ds, preserve_range=True)
-    out = cuda_rescale(im, zoom=[1./ds,1./ds,1./ds], order=1, mode='reflect')
+    # keep everything on the GPU: cuda_rescale returns numpy, which cupyx gaussian_filter does not accept.
+    out = ndimage.zoom(cupy.asarray(im), zoom=[1./ds,1./ds,1./ds], order=1, mode='reflect')
     out = ndimage.gaussian_filter(out, sigma=sigma)
-    # out = cu_transform.resize(out, np.array(im.shape), preserve_range=True) 
-    out = cuda_rescale(out, zoom=np.array(im.shape)/np.array(out.shape), order=1, mode='reflect')
+    out = ndimage.zoom(out, zoom=np.array(im.shape)/np.array(out.shape), order=1, mode='reflect')
     
     return cupy.asnumpy(out)
 
 
 def cuda_normalize(x, pmin=2, pmax=99.8, axis=None,  clip=False, eps=1e-20, cast_numpy=False):
     
+    _load_torch_cuda_libs() # make cupy independent of torch/cupy import order
     import cupy 
     
     mi, ma = cupy.percentile(cupy.array(x),[pmin,pmax],axis=axis,keepdims=True)
@@ -200,8 +226,13 @@ def cuda_normalize(x, pmin=2, pmax=99.8, axis=None,  clip=False, eps=1e-20, cast
 # import dask.array as da
 from numba import jit
 @jit(nopython=True, parallel=True)
+def _num_bg_correct_elementwise(im, bg, m, eps):
+    return m/(bg + eps) * im
+
 def num_bg_correct(im, bg, eps=0.1):
-    return np.mean(bg)/(bg + eps) * im
+    # take the mean outside the parallel kernel in float64 so the result does not depend on the numba thread count / reduction order.
+    m = float(np.mean(bg, dtype=np.float64))
+    return _num_bg_correct_elementwise(im, bg, m, eps)
 
     
 @jit(nopython=True, nogil=True, parallel=True)
